@@ -79,10 +79,11 @@ Every project like this hides its gaps. This one lists them. **Verified** means 
 | Klipper (Moonraker) and OctoPrint adapters | 🟡 Experimental | unit-tested on sample payloads from the public API docs; **never run on a real printer** |
 | Studio to Orca profile converter | ✅ Verified | reproduces a profile that works in a real Orca install, key for key; unit-tested |
 | Scheduled run with launchd | ✅ Verified | ran repeatedly with exit code 0 |
-| Command-line slicing with Orca + G-code validation | 🟡 Slices and validates | a test cube; equivalence with what the GUI produces was **not** verified, see [docs/06](docs/06-slicing-with-an-assistant.md#pitfall-the-command-line-does-not-resolve-profile-inheritance-like-the-gui) |
+| Command-line slicing with Orca + G-code validation | 🟡 Slices and validates | a test cube; equivalence with what the GUI produces was **not** verified (a likely cause was fixed upstream after the 2.4.2 release), see [docs/06](docs/06-slicing-with-an-assistant.md#pitfall-the-command-line-does-not-resolve-profile-inheritance-like-the-gui) |
 | Sending a job from Orca to a Bambu printer | 🟡 Worked once | by the author's account; the printer then showed the job running |
 | AMS recognises the converted profile | 🟡 Author reports it works | the converter keeps the id the slots already report; not independently checked |
 | Assistant modeling through a CAD MCP server | 🟡 Connected, not yet exercised | Autodesk Fusion's local MCP server connects; modeling a real part is still to do |
+| Part analysis: geometry to questions and settings | 🟡 Tested on synthetic shapes and 5 real parts | `scripts/analyze_part.py` measures slopes, overhangs, flat tops, walls and six orientations; the thresholds are heuristics that cite their source or say so, see [docs/12](docs/12-slicing-by-part.md). Not yet validated against prints |
 | Per-part slicing overrides from the command line | 🟡 Mechanics proven | 4 walls, 25% infill and a brim reached the G-code with no GUI; the rest of the profile may differ from the GUI, use `gcode_settings_diff.py` to check |
 | Other Bambu models (X1, A1, P1) | ⚪ Untested | same protocol family, different profiles |
 | Linux and Windows | ⚪ Untested | scripts are standard library; only the scheduler is macOS-specific |
@@ -142,8 +143,9 @@ Everything runs on your computer and talks to the printer over your local networ
 │   ├── 09-the-conductor-skill.md
 │   ├── 10-troubleshooting.md
 │   ├── 11-privacy-and-publishing.md
+│   ├── 12-slicing-by-part.md        measure the shape, ask, decide, compare scenarios
 │   └── examples/example-session.md    what a session looks like (illustrative)
-├── scripts/                     the five tools (Python standard library only)
+├── scripts/                     the six tools (standard library, except the part analyzer, which needs numpy)
 ├── skill/print-conductor/       the thin conductor skill, as a template
 ├── knowledge-base-template/     five Markdown notes to copy into your own
 ├── config/                      example config files (never the real ones)

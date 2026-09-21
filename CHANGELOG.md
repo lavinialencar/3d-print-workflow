@@ -5,6 +5,14 @@ All notable changes are recorded here. Format based on [Keep a Changelog](https:
 
 ## [Unreleased]
 
+### Added
+- `scripts/analyze_part.py`: measures a model (slopes, flat tops, round walls, overhangs, bridges, wall thickness, six orientations) and turns it into questions for the owner, global and per-object settings, and three scenarios to slice and compare. Reads STL and 3MF plates. Needs numpy.
+- `docs/12-slicing-by-part.md`: the method, with a source or an honest "heuristic" label on every rule.
+- 15 tests for the analyzer, built on shapes with known answers (cube, sphere, cylinder, T bracket, thin plate).
+
+### Changed
+- docs/06 now records the likely upstream cause of the command-line versus GUI difference (OrcaSlicer pull request 15438, merged after v2.4.2) and says it is untested here.
+
 ## [0.1.0] - 2026-09-20
 
 First public template, extracted from a working personal setup with every personal detail removed. Built for any printer, with a full track for

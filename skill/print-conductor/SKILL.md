@@ -33,13 +33,16 @@ pitfalls. Then read only the part each step asks for, never whole files.
 
 ## The cycle
 
-1. **Model.** Read `KB/modeling-method.md`: what to ask, what not to ask, print orientation,
+1. **Model.** First ask whether a model already exists (search the public libraries with the user, and ask if they have a reference image or file: a generic
+   stand-in is worse than no answer). Then read `KB/modeling-method.md`: what to ask, what not to ask, print orientation,
    tolerances, bed limit. Tool: `<CAD_TOOL>` (for example the Fusion MCP server, which needs the
    app open with an active document; if the connection is missing, say so).
 2. **Check.** Mesh verification (watertight, volume against the bounding box, size against the bed)
    and a **conference board PNG**; the `dfam-check` skill if available.
-3. **Recommend slicing.** Read the slicing section of `KB/printer-profile.md`; give the
-   recommendation in the format defined there. Only highlight what differs from the defaults.
+3. **Recommend slicing.** Run `scripts/analyze_part.py` on the model, ask the owner **only** the questions it raises (at most four, each with a default),
+   then read the slicing section of `KB/printer-profile.md` and give the recommendation in the format defined there, split into global settings and
+   per-object overrides. Slice the scenarios it proposes and show the real time and grams before the owner chooses. A failure seen in a real print goes
+   back into the rules, not just into this one part. Method: `docs/12-slicing-by-part.md`.
 4. **Slice.** The `gcode` skill with OrcaSlicer (or PrusaSlicer, CuraEngine): `inspect`, `slice --dry-run`, `slice --execute`,
    `validate`.
 5. **Send.** Through the slicer, done by the user. Not verified by you unless a reading shows it.

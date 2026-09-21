@@ -23,6 +23,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python }}
+      - name: Install the optional dependency (numpy, for the part analyzer)
+        run: python -m pip install numpy
       - name: Compile every script
         run: python -m py_compile scripts/*.py tools/*.py
       - name: Unit tests (synthetic data only)

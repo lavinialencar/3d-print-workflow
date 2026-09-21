@@ -113,8 +113,12 @@ involved. What is *not* guaranteed is that everything **else** matches what you 
 python3 scripts/gcode_settings_diff.py gui.gcode cli.gcode
 ```
 
+**Likely cause, fixed upstream.** OrcaSlicer's own pull request [#15438](https://github.com/OrcaSlicer/OrcaSlicer/pull/15438), "resolve inherited presets through vendor manifests", was merged on 2026-09-08. It fixes sparse profiles silently falling back to schema defaults in `--load-settings` and `--load-filaments`. The latest stable release at the time of writing, v2.4.2 (2026-07-07), predates it. Whether a build with the fix closes the whole gap has **not** been tested here, so keep verifying with the diff below.
+
 An empty list (or only what you changed on purpose) means the command-line profile is equivalent to the GUI. A long list means it is not, and the printout tells
 you which values to fix. Do this before you trust any "automatic best quality" claim, including this project's.
+
+Before recommending, let the shape speak: [12 Slicing by part](12-slicing-by-part.md) measures the model and turns it into questions and settings.
 
 ## The recommendation, in practice
 

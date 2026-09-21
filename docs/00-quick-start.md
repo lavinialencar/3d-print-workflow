@@ -26,7 +26,7 @@ The Bambu track is the longest, because that ecosystem is the most closed. Every
 | You need | Why | Check |
 |---|---|---|
 | macOS | the scheduler is written for it; Linux can adapt the scripts | `uname` prints `Darwin` |
-| Python 3.8+ | all scripts use only the standard library | `python3 --version` |
+| Python 3.8+ | all scripts use only the standard library, except the part analyzer (`numpy`) | `python3 --version` |
 | OrcaSlicer 2.4+ (or PrusaSlicer, Cura) | the slicer with a command line | installed |
 | Claude Code | drives the CAD tool and the skills (optional for alerts only) | `claude --version` |
 | A phone with the ntfy app | receives the alerts | installed from your app store |
