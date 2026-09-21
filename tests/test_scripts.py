@@ -252,5 +252,42 @@ class LaunchdTests(unittest.TestCase):
         self.assertNotIn("--send", data["ProgramArguments"])
 
 
+
+import gcode_settings_diff as gdiff  # noqa: E402
+
+
+class SettingsDiffTests(unittest.TestCase):
+    A = "; wall_loops = 2\n; sparse_infill_density = 20%\n; print_settings_id = Standard\n; total layer number: 100\n"
+    B = "; wall_loops = 4\n; sparse_infill_density = 20%\n; print_settings_id = Mine\n; only_in_b = 1\n"
+
+    def test_reads_semicolon_settings(self):
+        self.assertEqual(gdiff.read_settings(self.A)["wall_loops"], "2")
+
+    def test_reports_only_real_differences_and_hides_identification(self):
+        rows = gdiff.diff_settings(gdiff.read_settings(self.A), gdiff.read_settings(self.B))
+        keys = [row[0] for row in rows]
+        self.assertIn("wall_loops", keys)
+        self.assertIn("only_in_b", keys)
+        self.assertNotIn("print_settings_id", keys)
+        self.assertNotIn("sparse_infill_density", keys)
+
+    def test_ignore_and_all_flags(self):
+        a, b = gdiff.read_settings(self.A), gdiff.read_settings(self.B)
+        self.assertNotIn("wall_loops", [r[0] for r in gdiff.diff_settings(a, b, ignore={"wall_loops"})])
+        self.assertIn("print_settings_id", [r[0] for r in gdiff.diff_settings(a, b, show_noise=True)])
+
+    def test_identical_files_have_no_differences(self):
+        settings = gdiff.read_settings(self.A)
+        self.assertEqual(gdiff.diff_settings(settings, dict(settings)), [])
+
+    def test_cli_exit_codes(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            first, second = os.path.join(tmp, "a.gcode"), os.path.join(tmp, "b.gcode")
+            open(first, "w").write(self.A)
+            open(second, "w").write(self.A)
+            self.assertEqual(gdiff.main([first, second]), 0)
+            open(second, "w").write(self.B)
+            self.assertEqual(gdiff.main([first, second]), 1)
+
 if __name__ == "__main__":
     unittest.main()

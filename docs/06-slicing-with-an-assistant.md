@@ -91,6 +91,31 @@ Bambu-specific commands the validator does not know; it leaves them alone, and t
 
 Validation is **static**. It does not prove the print will succeed. Look at the first layer.
 
+## Pitfall: the command line does not resolve profile inheritance like the GUI
+
+This one is easy to miss and it matters for quality. Slicing the **same part** from the command line, three ways, produced G-code whose settings differ
+in dozens of keys nobody asked to change:
+
+| How the profile was given | What happened |
+|---|---|
+| The system profile file **as-is** | Slices, but the file only holds the values it overrides; everything else falls back to the slicer's built-in defaults. Not what the GUI shows |
+| A **fully merged** copy (parents resolved into one file) | Closer to the GUI, but 40 keys differed from the as-is run: line widths, wall generator (Arachne or classic), support type, skirt |
+| A **child** profile that `inherits` the system one | Your overrides apply, but the parent's speeds and accelerations came back at the slicer's slow defaults: 27 keys differed |
+
+The mechanics of per-part settings **do work**: a child or merged profile setting 4 walls, 25% infill and a 5 mm brim produced exactly that in the G-code, with no GUI
+involved. What is *not* guaranteed is that everything **else** matches what you would get by pressing "Slice" in the app.
+
+**So verify it once, with a reference.** `scripts/gcode_settings_diff.py` compares the settings the slicer records inside two G-code files:
+
+```bash
+# 1. In the GUI, slice a part with your profile and export the G-code            -> gui.gcode
+# 2. Slice the SAME part from the command line with the profile you want to trust -> cli.gcode
+python3 scripts/gcode_settings_diff.py gui.gcode cli.gcode
+```
+
+An empty list (or only what you changed on purpose) means the command-line profile is equivalent to the GUI. A long list means it is not, and the printout tells
+you which values to fix. Do this before you trust any "automatic best quality" claim, including this project's.
+
 ## The recommendation, in practice
 
 Before slicing, the assistant reads your `printer-profile.md` and looks at the part: its size, its base, its

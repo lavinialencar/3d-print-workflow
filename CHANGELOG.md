@@ -16,17 +16,18 @@ Bambu Lab's closed ecosystem.
 - `scripts/print_monitor_launchd.py`: macOS scheduler installer with `print`, `install`, `status`, `uninstall`.
 - `scripts/studio_to_orca_filament.py`: converts a Bambu Studio 2.x filament profile into a standalone OrcaSlicer profile, avoiding three silent failure modes.
 - `scripts/gcode_consumption.py`: reads filament use from sliced G-code and writes the log row.
+- `scripts/gcode_settings_diff.py`: compares the slicer settings recorded inside two G-code files, to check a command-line profile against the GUI.
 - `skill/print-conductor/`: thin conductor skill template.
 - `knowledge-base-template/`: hub, printer profile, modeling checklist, filament log and print queue.
 - `tools/scan_personal_data.py` and `tools/check_links.py`: a shape-based personal-data scanner and a documentation link checker, both run in CI.
 - Twelve guides in `docs/`, including a Bambu Lab track, an other-printers guide, an example session, three SVG diagrams and a troubleshooting table.
-- 44 unit tests on synthetic data, GitHub Actions CI with secret scanning, issue and pull-request templates.
+- 49 unit tests on synthetic data, GitHub Actions CI with secret scanning, issue and pull-request templates.
 
 ### Known gaps
 - The "print finished" alert has not yet been observed on real hardware (logic is unit-tested).
 - The Klipper and OctoPrint adapters have never run on a real printer.
 - Assistant-driven modeling through a CAD MCP server is connected but not yet exercised.
-- Per-part slicing overrides from the command line are unverified.
+- Command-line slicing is not verified to match the GUI: the slicer's CLI does not resolve profile inheritance like the GUI does (see docs/06).
 - Linux and Windows are untested; only the scheduler is macOS-specific.
 
 [Unreleased]: https://github.com/lavinialencar/3d-print-workflow/compare/v0.1.0...HEAD

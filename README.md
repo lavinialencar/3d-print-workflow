@@ -59,6 +59,7 @@ Modeling, checking, recommending, slicing (OrcaSlicer, PrusaSlicer or CuraEngine
 | **A profile converter** | `scripts/studio_to_orca_filament.py` | Turns a Bambu Studio filament profile into one OrcaSlicer accepts, and explains the three traps |
 | **A scheduler installer** | `scripts/print_monitor_launchd.py` | Runs the monitor every few minutes on macOS, with `print`, `install`, `status`, `uninstall` |
 | **A consumption reader** | `scripts/gcode_consumption.py` | Reads grams and length from a sliced file and writes the log row for you |
+| **A settings comparer** | `scripts/gcode_settings_diff.py` | Shows which slicer settings differ between two G-codes, e.g. the GUI's and the command line's |
 | **A conductor skill** | `skill/print-conductor/` | A thin instruction file that keeps the cycle in order and the rules unbroken |
 | **A knowledge-base template** | `knowledge-base-template/` | Five plain Markdown notes: hub, printer profile, modeling checklist, filament log, print queue |
 | **Guards** | `tools/` | A personal-data scanner and a documentation link checker, both run in CI |
@@ -78,11 +79,11 @@ Every project like this hides its gaps. This one lists them. **Verified** means 
 | Klipper (Moonraker) and OctoPrint adapters | 🟡 Experimental | unit-tested on sample payloads from the public API docs; **never run on a real printer** |
 | Studio to Orca profile converter | ✅ Verified | reproduces a profile that works in a real Orca install, key for key; unit-tested |
 | Scheduled run with launchd | ✅ Verified | ran repeatedly with exit code 0 |
-| Command-line slicing with Orca + validation | ✅ Verified | a test cube, default process profile |
+| Command-line slicing with Orca + G-code validation | 🟡 Slices and validates | a test cube; equivalence with what the GUI produces was **not** verified, see [docs/06](docs/06-slicing-with-an-assistant.md#pitfall-the-command-line-does-not-resolve-profile-inheritance-like-the-gui) |
 | Sending a job from Orca to a Bambu printer | 🟡 Worked once | by the author's account; the printer then showed the job running |
 | AMS recognises the converted profile | 🟡 Author reports it works | the converter keeps the id the slots already report; not independently checked |
 | Assistant modeling through a CAD MCP server | 🟡 Connected, not yet exercised | Autodesk Fusion's local MCP server connects; modeling a real part is still to do |
-| Per-part slicing overrides from the command line | ⚪ Not verified | start with recommendations and the GUI |
+| Per-part slicing overrides from the command line | 🟡 Mechanics proven | 4 walls, 25% infill and a brim reached the G-code with no GUI; the rest of the profile may differ from the GUI, use `gcode_settings_diff.py` to check |
 | Other Bambu models (X1, A1, P1) | ⚪ Untested | same protocol family, different profiles |
 | Linux and Windows | ⚪ Untested | scripts are standard library; only the scheduler is macOS-specific |
 
@@ -142,7 +143,7 @@ Everything runs on your computer and talks to the printer over your local networ
 │   ├── 10-troubleshooting.md
 │   ├── 11-privacy-and-publishing.md
 │   └── examples/example-session.md    what a session looks like (illustrative)
-├── scripts/                     the four tools (Python standard library only)
+├── scripts/                     the five tools (Python standard library only)
 ├── skill/print-conductor/       the thin conductor skill, as a template
 ├── knowledge-base-template/     five Markdown notes to copy into your own
 ├── config/                      example config files (never the real ones)
