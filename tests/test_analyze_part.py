@@ -236,6 +236,16 @@ class AnalyzeTests(unittest.TestCase):
                     self.assertFalse(r["applied"])
             self.assertLessEqual(set(rec["settings"]), ap.ORCA_KEYS, use)
 
+    def test_ironing_never_trusts_a_single_number(self):
+        rec = ap.recommend(self._plate(), "smooth", "decorative", False, uses=["text"])
+        notes = [r for r in rec["rules"] if r["kind"] == "text" and "speed by flow" in r["why"]]
+        self.assertTrue(notes and notes[0]["status"] == "disputed" and not notes[0]["applied"])
+
+    def test_the_016_layer_carries_the_p2s_artifact_warning(self):
+        rec = ap.recommend(self._plate(), "standard", "functional", False, uses=["watertight"])   # watertight forces 0.16
+        self.assertEqual(rec["layer_height"], 0.16)
+        self.assertTrue(any("0.16 mm Standard" in n for n in rec["notes"]))
+
     def test_flexi_turns_supports_off_and_uses_thinner_layers(self):
         rec = ap.recommend(self._plate(), "fast", "functional", False, uses=["flexi"])
         self.assertEqual(rec["settings"]["enable_support"], 0)

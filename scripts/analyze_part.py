@@ -376,6 +376,9 @@ SRC = {
     "qidi-brackets": "https://us.qidi3d.com/blogs/print-lab/3d-printed-shelf-brackets-load-capacity-design",
     "litho-guide": "https://www.3dprinterstuff.com/workshop/lithophane-3d-printing-guide",
     "litho-forum": "https://forum.bambulab.com/t/printing-lithophanes-flat-or-vertical/84574",
+    "yt-ironing-grid": "https://www.youtube.com/watch?v=b0tqtJJ8Lf0",
+    "yt-ironing-navy": "https://www.youtube.com/watch?v=vowkUstjZlE",
+    "yt-p2s-review": "https://www.youtube.com/watch?v=ik9yv4BVGlg",
     "project": "this project",
 }
 
@@ -483,6 +486,8 @@ def recommend(features, finish, purpose, backlit, nozzle=NOZZLE, uses=()):
             reasons.append(f"use={u} -> {value} mm layers: {USES[u][1]}")
     layer = snap_layer(layer)
     preset = PRESETS[layer]
+    if layer == 0.16:
+        notes.append("A reviewer of the P2S reports an overhang-related artifact with the 0.16 mm Standard profile, obvious on the P2S and not yet fixed by Bambu (October 2025, one video): check the overhangs of the first print, or use 0.12 or 0.20. " + SRC["yt-p2s-review"])
     if 0.08 <= layer <= 0.12:
         notes.append("The High Quality presets also slow the outer wall (60 mm/s against 200), so the extra time is speed as much as layers. Slice both and compare real times.")
 
@@ -529,6 +534,7 @@ def recommend(features, finish, purpose, backlit, nozzle=NOZZLE, uses=()):
     flat_top = features["flat_top_mm2"]
     if finish == "smooth" and flat_top >= 300 and stair < 0.5:
         rule("flat_top", "ironing_type", "topmost", "Ironing smooths the last layer with a second, nearly dry pass: flat tops only.", "orca-ironing")
+        rule("flat_top", None, None, "The slicer's default ironing (about 30 mm/s, 10% flow) made the top look worse than no ironing in one video; a speed by flow test plate found 30% and 50 mm/s best on that printer, and another video found 15 mm/s and 20%. Print a small test plate per filament instead of trusting a number.", "yt-ironing-grid", "disputed", apply=False)
         rule("flat_top", "top_shell_layers", 5 if layer <= 0.12 else 4, "Ironing smooths, it does not fill gaps: it needs solid layers under it.", "project", "heuristic")
         reasons.append(f"{flat_top / 100:.1f} cm2 of flat top -> ironing on the topmost surface, with enough solid layers under it")
         questions.append("Is the top face the one people see? Ironing adds time and only helps flat tops.")
@@ -590,6 +596,7 @@ def recommend(features, finish, purpose, backlit, nozzle=NOZZLE, uses=()):
     if "text" in uses:
         rule("text", None, None, "Raised text on a 0.4 mm nozzle: strokes 1.0 mm wide at least (1.5 better), 0.5 mm high at least (0.8 better), letters 4 mm tall at least (6 better). Engraved: 0.5 mm wide (0.8 better) and 0.3 mm deep (0.5 better). Bold sans-serif capitals. A blog reports 0.4 to 0.6 mm strokes as the absolute floor.", "mandarin3d", "disputed", apply=False)
         rule("text", "ironing_type", "topmost", "Iron the top of raised text and plaques.", "printago-ironing")
+        rule("text", None, None, "The best ironing speed and flow differ by filament and printer (15 mm/s and 20% in one video, 50 mm/s and 30% in another, and the default was worse than none in the second): print a speed by flow test plate once per filament.", "yt-ironing-navy", "disputed", apply=False)
         rule("text", "ironing_flow", "10%", "Low flow (8 to 18% reported), 0.1 mm line spacing, 15 to 30 mm/s. The Orca wiki lists the settings but gives no defaults.", "printago-ironing")
         rule("text", "ironing_spacing", 0.1, "0.1 mm line spacing.", "printago-ironing")
         rule("text", "ironing_speed", 20, "15 to 30 mm/s.", "printago-ironing")
