@@ -25,7 +25,7 @@ It prints a numbered shortlist from Printables with the signals that matter:
 | licence | a *no derivatives* licence matters if you plan to adapt the part, and a *non-commercial* one if you plan to sell it |
 | date | old models may predate today's printers and slicers |
 
-The sites without an open search API (MakerWorld, Thingiverse, Thangs) are searched through the web instead. **Downloading is the user's click**, from the model's page,
+The other sites are covered differently. **Thingiverse** has an official API, but it needs a free app token from your own account, so it is optional. **MakerWorld** has no open API and blocks scripts, but its search page reads fine in a real browser, so an assistant with a browser tool can read the results list (never the download button). **Thangs** has no public API, but its website offers search by image, useful when you only have a picture. **Cults3D** has a GraphQL API with a key, mostly for paid models, and never exposes the files. **Downloading is the user's click**, from the model's page,
 so the licence and the author's notes are seen. Only when nothing fits, or the user has a reference image or file of their own, does the assistant model from scratch.
 
 The Printables endpoint is unofficial: it can change or start blocking requests. If it fails, the script says so and the assistant falls back to the web.
