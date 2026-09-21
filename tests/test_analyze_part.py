@@ -156,6 +156,70 @@ class AnalyzeTests(unittest.TestCase):
                                      "-X": m(15, 3, 990), "+Y": m(101, 67, 29), "-Y": m(101, 38, 60)}}
         self.assertEqual(ap.best_orientation(features), ("+Z", False))
 
+    def test_a_thin_fin_gets_only_the_walls_that_fit(self):
+        f = ap.analyze("fin", box(0, 0, 0, 40, 0.6, 40))
+        self.assertIn("thin", ap.archetypes(f))
+        rec = ap.recommend(f, "smooth", "functional", False)
+        self.assertEqual(rec["settings"]["wall_loops"], 1)          # 3 walls cannot fit in 0.6 mm
+        self.assertEqual(rec["settings"]["wall_generator"], "arachne")
+
+    def test_a_thick_block_gets_wide_inner_lines_and_the_time_question(self):
+        f = ap.analyze("block", box(0, 0, 0, 50, 50, 50))
+        self.assertIn("thick", ap.archetypes(f))
+        rec = ap.recommend(f, "smooth", "decorative", False)
+        self.assertEqual(rec["settings"]["inner_wall_line_width"], 0.6)
+        self.assertEqual(rec["settings"]["sparse_infill_pattern"], "adaptivecubic")
+        self.assertTrue(any("bulk part" in q for q in rec["questions"]))
+        load = ap.recommend(f, "smooth", "load", False)
+        self.assertEqual(load["settings"]["sparse_infill_pattern"], "gyroid")
+
+    def test_a_sphere_gets_variable_layer_height_and_the_split_idea(self):
+        f = ap.analyze("sphere", sphere(15.0, 32, 64))
+        kinds = ap.archetypes(f)
+        self.assertIn("curved", kinds)
+        self.assertNotIn("tall_thin", kinds)      # it rests on a point, but a brim would not help a sphere
+        self.assertNotIn("thick", kinds)          # 14 cm3 is not a bulk part
+        rec = ap.recommend(f, "smooth", "decorative", False)
+        self.assertTrue(any(r["kind"] == "curved" and "variable layer height" in r["why"] for r in rec["rules"]))
+        self.assertTrue(any("cut it in two" in q for q in rec["questions"]))
+
+    def test_a_wide_low_plate_is_a_warping_risk(self):
+        f = ap.analyze("plate", box(0, 0, 0, 80, 60, 3))
+        self.assertIn("flat_large", ap.archetypes(f))
+        self.assertEqual(ap.recommend(f, "standard", "functional", False)["settings"]["brim_type"], "outer_only")
+
+    def test_flat_undersides_get_normal_supports_and_round_ones_get_tree(self):
+        flat = ap.recommend(ap.analyze("t", t_shape()), "standard", "functional", False)
+        self.assertEqual(flat["settings"]["support_type"], "normal(auto)")
+        rnd = ap.recommend(ap.analyze("s", sphere(15.0, 32, 64)), "standard", "decorative", False)
+        self.assertEqual(rnd["settings"]["support_type"], "tree(auto)")
+
+    def test_a_long_bridge_gets_thick_bridges_and_a_very_long_one_only_a_warning(self):
+        span = ap.analyze("span", np.concatenate([box(0, 0, 0, 5, 30, 20), box(35, 0, 0, 40, 30, 20), box(0, 0, 20, 40, 30, 24)]))
+        # overlapping shells leave internal faces, so only the archetype and the rule wiring are checked here
+        self.assertIn("bridge", ap.archetypes(span))
+
+    def test_every_rule_names_a_source_and_a_known_status(self):
+        for shape in (sphere(15.0, 32, 64), box(0, 0, 0, 50, 50, 50), box(0, 0, 0, 40, 0.6, 40), t_shape(), cylinder(), box(0, 0, 0, 80, 60, 3)):
+            rec = ap.recommend(ap.analyze("x", shape), "smooth", "functional", False)
+            for r in rec["rules"]:
+                self.assertIn(r["status"], {"sourced", "disputed", "heuristic", "unverified"})
+                self.assertTrue(r["source"].startswith("http") or r["source"] == "this project", r)
+
+    def test_unverified_rules_are_suggestions_and_never_applied(self):
+        rec = ap.recommend(ap.analyze("plate", box(0, 0, 0, 80, 60, 3)), "standard", "functional", False)
+        unverified = [r for r in rec["rules"] if r["status"] == "unverified"]
+        self.assertTrue(unverified)
+        self.assertTrue(all(not r["applied"] for r in unverified))
+        self.assertNotIn("elefant_foot_compensation", rec["settings"])
+
+    def test_every_setting_written_is_a_real_orca_key(self):
+        for shape in (sphere(15.0, 32, 64), box(0, 0, 0, 50, 50, 50), box(0, 0, 0, 40, 0.6, 40), t_shape(), cylinder(), box(0, 0, 0, 80, 60, 3), box(0, 0, 0, 8, 8, 60)):
+            for finish in ("smooth", "standard", "fast"):
+                for purpose in ("decorative", "functional", "load"):
+                    rec = ap.recommend(ap.analyze("x", shape), finish, purpose, False)
+                    self.assertLessEqual(set(rec["settings"]), ap.ORCA_KEYS)
+
     def test_inside_out_mesh_gives_the_same_answer(self):
         good = ap.analyze("t", t_shape())
         flipped = ap.analyze("t", t_shape()[:, [0, 2, 1]])

@@ -89,6 +89,37 @@ When a plate holds several objects the script keeps the settings most objects sh
 **"Heuristic" means this project's own threshold**, chosen to be sensible and easy to change, not a number from a paper. They live in one function
 (`recommend`) so you can tune them, and the tests pin down the intended behaviour.
 
+### Kinds of part, and what each one changes
+
+A part can be several kinds at once. `analyze_part.py` names the kinds it found, with the number that says so, and every rule it applies prints its source and how far to trust it.
+
+| Kind | Found when | What changes | Where it comes from |
+|---|---|---|---|
+| **curved** (sphere, dome) | 30% or more of the surface is a gentle slope | 0.12 mm layers, **variable layer height** in the slicer, and the idea of splitting a round part in two, flat side down, instead of supporting it | [Obico](https://www.obico.io/blog/orca-slicer-adaptive-and-variable-layer-height-guide-smoother-3d-prints/), [OrcaSlicer wiki](https://www.orcaslicer.com/wiki/print_prepare/prepare_variable_layer_height), [3dprinterly](https://3dprinterly.com/how-to-3d-print-a-dome-or-sphere-without-supports/) |
+| **round walls** | 25% or more of the surface is a round vertical wall | seam `aligned`, plus a scarf seam (`seam_slope_type = external`) when the wall is longer than the 20 mm scarf; `random` for load-bearing parts | [OrcaSlicer wiki: seam](https://www.orcaslicer.com/wiki/print_settings/quality/quality_settings_seam) |
+| **thin** | walls under 0.8 mm at the thin end | `wall_loops` capped to the lines that fit (a 0.6 mm wall gets 1), Arachne kept, a question when a wall is thinner than one line, a 0.2 mm nozzle noted for miniatures | [OrcaSlicer wiki: wall generator](https://www.orcaslicer.com/wiki/print_settings/quality/quality_settings_wall_generator) |
+| **thick** (bulk) | smallest side 40 mm or more and 40 cm3 or more | wide inner walls and infill (0.6 mm, about 150%), Adaptive Cubic infill (Gyroid for load), and the question "is the surface visible on all sides?", because thin layers on a bulk part cost hours | [CNC Kitchen](https://www.cnckitchen.com/blog/the-effect-of-extrusion-width-on-strength-and-quality-of-3d-prints), [OrcaSlicer wiki: patterns](https://www.orcaslicer.com/wiki/print_settings/strength/strength_settings_patterns) |
+| **overhang** | 150 mm2 or 2% of the surface steeper than 40 degrees | supports on; **normal** under large flat undersides, **tree** for curved and organic parts; 2 interface layers; the orientation question | [OrcaSlicer wiki: support](https://www.orcaslicer.com/wiki/print_settings/support/support_settings_support), [StackSheriff](https://stacksheriff.com/3d-printing/orcaslicer-support-settings/) |
+| **bridge** | a flat underside spanning 15 mm or more | `thick_bridges` on; a warning past 40 mm | [OrcaSlicer wiki: bridging](https://www.orcaslicer.com/wiki/print_settings/quality/quality_settings_bridging), [Bambu Lab wiki](https://wiki.bambulab.com/en/software/bambu-studio/parameter/bridge) |
+| **tall and thin** | taller than three times its footprint | outer brim, cooling note | [OrcaSlicer wiki: brim](https://www.orcaslicer.com/wiki/print_settings/others/others_settings_brim) |
+| **wide and flat** | over 40 cm2 on the bed and under 6 mm tall | outer brim (8 mm), warping notes | same, plus a Prusa forum case |
+| **flat top** | 3 cm2 or more at the highest point | ironing on the topmost surface, with solid layers under it | [OrcaSlicer wiki: ironing](https://www.orcaslicer.com/wiki/print_settings/quality/quality_settings_ironing) |
+| **fits** | the part is functional | a question about mating parts, and Orca's tolerance test to set hole compensation | [OrcaSlicer wiki: tolerance](https://github.com/OrcaSlicer/OrcaSlicer/wiki/tolerance_calib) |
+
+**Four trust levels.** `sourced`: a page gives the value or the mechanism. `disputed`: sources disagree, the more conservative side is applied and both are shown. `heuristic`: this project's own threshold. `unverified`: reported but not confirmed from a real page, so it is shown as a suggestion and **never applied**. The tests enforce that, and also that every setting written is a name that really exists in OrcaSlicer 2.4.2 (a misspelled key is ignored silently by the slicer).
+
+**Disagreements found while gathering this, and how they were settled:**
+
+| Question | The two sides | What the script does |
+|---|---|---|
+| Best wall order for a smooth surface | the wiki calls inner, outer, inner the best; OrcaSlicer's own help text says the *precise wall* option is ignored in that order | keeps the default order with precise wall on, and leaves inner, outer, inner as an A/B test |
+| 0.08 mm layers | usable (Obico) against blisters and artifacts on a Bambu printer, 0.12 more reliable ([forum](https://forum.bambulab.com/t/surface-problem-at-0-08-height/53851)) | 0.12, and 0.08 only by comparing slices |
+| Arachne or Classic on tiny detail | better on text and thin walls, against reports of lumpy results | Arachne, with the advice to slice both when a detail looks wrong |
+| Support Z distance | 0.2 mm at 0.2 layers against 50 to 75% of the layer height (Prusa) | keeps the profile default |
+| Slow down for curled perimeters on domes | cools overhangs, against choppy speeds and artifacts ([issue 9480](https://github.com/OrcaSlicer/OrcaSlicer/issues/9480)) | not changed; worth an A/B on a dome |
+
+**Not confirmed, so only suggested:** elephant-foot compensation values, cooling numbers for small parts, the 0.2 mm nozzle's behaviour on a P2S after a recent firmware, hole-compensation starting values, and any universal snap-fit gap.
+
 ## 4. Compare the scenarios
 
 The script cannot know your printer's real time or filament use. It proposes three scenarios (Smooth, Balanced, Fast) with the layer count of each.
