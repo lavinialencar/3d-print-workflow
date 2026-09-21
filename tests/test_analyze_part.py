@@ -220,6 +220,69 @@ class AnalyzeTests(unittest.TestCase):
                     rec = ap.recommend(ap.analyze("x", shape), finish, purpose, False)
                     self.assertLessEqual(set(rec["settings"]), ap.ORCA_KEYS)
 
+    def _plate(self):
+        return ap.analyze("plate", box(0, 0, 0, 60, 30, 3))
+
+    def test_every_use_produces_sourced_rules_and_only_real_keys(self):
+        f = self._plate()
+        for use in ap.USES:
+            rec = ap.recommend(f, "smooth", "functional", False, uses=[use])
+            mine = [r for r in rec["rules"] if r["kind"] == use]
+            self.assertTrue(mine, use)
+            for r in mine:
+                self.assertIn(r["status"], {"sourced", "disputed", "heuristic", "unverified"})
+                self.assertTrue(r["source"].startswith("http") or r["source"] == "this project", (use, r))
+                if r["status"] == "unverified":
+                    self.assertFalse(r["applied"])
+            self.assertLessEqual(set(rec["settings"]), ap.ORCA_KEYS, use)
+
+    def test_flexi_turns_supports_off_and_uses_thinner_layers(self):
+        rec = ap.recommend(self._plate(), "fast", "functional", False, uses=["flexi"])
+        self.assertEqual(rec["settings"]["enable_support"], 0)
+        self.assertEqual(rec["layer_height"], 0.16)                     # even when the finish asked for fast
+        self.assertEqual(rec["settings"]["initial_layer_speed"], 20)
+        clearance = [r for r in rec["rules"] if "0.25 mm per side" in r["why"]][0]
+        self.assertEqual(clearance["status"], "disputed")               # sources disagree and the script says so
+
+    def test_text_irons_the_top_and_leaves_the_wall_generator_debate_open(self):
+        rec = ap.recommend(self._plate(), "standard", "decorative", False, uses=["text"])
+        self.assertEqual(rec["settings"]["ironing_type"], "topmost")
+        self.assertEqual(rec["settings"]["wall_generator"], "arachne")   # default kept, the debate is a note
+        self.assertTrue(any(r["kind"] == "text" and not r["applied"] and "Wall generator" in r["why"] for r in rec["rules"]))
+
+    def test_vase_turns_on_spiral_mode_and_watertight_wants_four_walls(self):
+        self.assertEqual(ap.recommend(self._plate(), "smooth", None, False, uses=["vase"])["settings"]["spiral_mode"], 1)
+        rec = ap.recommend(self._plate(), "smooth", "decorative", False, uses=["watertight"])
+        self.assertEqual((rec["settings"]["wall_loops"], rec["layer_height"]), (4, 0.16))
+
+    def test_figurine_gets_organic_tree_supports_and_bracket_gets_six_walls(self):
+        fig = ap.recommend(self._plate(), "smooth", "decorative", False, uses=["figurine"])
+        self.assertEqual((fig["settings"]["support_type"], fig["settings"]["support_style"]), ("tree(auto)", "organic"))
+        self.assertEqual(ap.recommend(self._plate(), "smooth", "load", False, uses=["bracket"])["settings"]["wall_loops"], 6)
+
+    def test_a_hollow_open_box_is_detected_as_a_container(self):
+        outer = box(0, 0, 0, 60, 60, 30)
+        # a box with a cavity: floor plate, four walls, no lid (overlaps leave internal faces, so only the detection is checked)
+        walls = np.concatenate([box(0, 0, 0, 60, 60, 2), box(0, 0, 2, 60, 2, 30), box(0, 58, 2, 60, 60, 30),
+                                box(0, 2, 2, 2, 58, 30), box(58, 2, 2, 60, 58, 30)])
+        f = ap.analyze("bin", walls)
+        self.assertEqual(ap.detect_uses(f), ["container"])
+        self.assertEqual(ap.detect_uses(ap.analyze("solid", outer)), [])
+
+    def test_a_multicolor_part_asks_about_the_colour_changes(self):
+        rec = ap.recommend(self._plate(), "smooth", "decorative", False, uses=["multicolor"])
+        self.assertTrue(any("colour changes" in q for q in rec["questions"]))
+
+    def test_unknown_use_is_refused_and_an_unlabelled_part_is_asked_what_it_is(self):
+        with self.assertRaises(SystemExit):
+            ap.main(["x.stl", "--use", "spaceship"])
+        rec = ap.recommend(self._plate(), "smooth", None, False)
+        self.assertTrue(any("What is it:" in q for q in rec["questions"]))
+
+    def test_machine_notes_print_and_carry_sources(self):
+        self.assertEqual(ap.main(["--machine"]), 0)
+        self.assertTrue(all(src.startswith("http") and status in {"sourced", "disputed", "unverified"} for _, src, status in ap.MACHINE))
+
     def test_inside_out_mesh_gives_the_same_answer(self):
         good = ap.analyze("t", t_shape())
         flipped = ap.analyze("t", t_shape()[:, [0, 2, 1]])

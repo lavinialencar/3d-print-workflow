@@ -120,6 +120,40 @@ A part can be several kinds at once. `analyze_part.py` names the kinds it found,
 
 **Not confirmed, so only suggested:** elephant-foot compensation values, cooling numbers for small parts, the 0.2 mm nozzle's behaviour on a P2S after a recent firmware, hole-compensation starting values, and any universal snap-fit gap.
 
+### What the part is for (`--use`)
+
+A mesh cannot say that a plaque carries text, that a joint must move, or that a box holds water. That is the owner's answer, given with `--use` or asked as a question
+when the part is unlabelled. An open container is the one thing geometry can honestly suggest (floors below the rim, mostly air), so that one is detected.
+
+```bash
+python3 scripts/analyze_part.py horse.stl --finish smooth --use flexi,multicolor
+python3 scripts/analyze_part.py bin.3mf --purpose load --use container
+```
+
+| Use | Applied for you (smooth finish shown) | Notes only | Trust of its rules |
+|---|---|---|---|
+| **text** (text, plaque, keychain, nameplate) | `ironing_type = topmost`, `ironing_flow = 10%`, `ironing_spacing = 0.1`, `ironing_speed = 20` | 2 | disputed 2, sourced 4 |
+| **multicolor** (several colours with the AMS) | notes only | 5 | disputed 1, sourced 3, unverified 1 |
+| **flexi** (print-in-place, articulated, flexi toys) | layer 0.16 mm; `enable_support = 0`, `wall_loops = 3`, `elefant_foot_compensation = 0.2`, `outer_wall_speed = 50`, `initial_layer_speed = 20`, `bridge_flow = 0.95`, `brim_type = outer_only`, `brim_width = 4` | 2 | disputed 2, heuristic 1, sourced 7 |
+| **fit** (mates with another part: snap, press fit, screw boss) | `wall_loops = 4` | 4 | disputed 1, heuristic 1, sourced 2, unverified 1 |
+| **container** (box, organizer, tray, bin, lid) | `wall_loops = 3`, `sparse_infill_density = 12%` | 2 | sourced 3, unverified 1 |
+| **watertight** (holds liquid, leak-proof) | layer 0.16 mm; `wall_loops = 4` | 1 | disputed 1, sourced 1 |
+| **vase** (spiral vase) | layer 0.2 mm; `spiral_mode = 1` | 0 | sourced 1 |
+| **figurine** (figurine, miniature, organic model) | layer 0.12 mm; `support_type = tree(auto)`, `support_style = organic`, `enable_support = 1`, `support_interface_top_layers = 2` | 4 | disputed 2, sourced 5, unverified 1 |
+| **bracket** (hook, bracket, wall mount, load-bearing) | `wall_loops = 6` | 1 | disputed 1, sourced 1 |
+| **lithophane** (lithophane or part seen against light) | layer 0.12 mm; `sparse_infill_density = 100%` | 1 | disputed 2 |
+
+Highlights the numbers cannot show: text wants strokes at least 1.0 mm wide on a 0.4 mm nozzle; a print-in-place joint starts at 0.25 mm of clearance per side (sources
+range from 0.1 to 0.5); an M3 heat-set insert wants a 4.2 mm hole as printed; a lid on a box takes 0.2 mm per side for a friction fit; coloured text wants at least 0.6 mm of depth.
+Every rule, its source and its status print with the report.
+
+### The machine side, which no shape can fix
+
+Some quality lives in the printer and the filament profile: `python3 scripts/analyze_part.py --machine` prints the checklist with a source and a trust level on each line. The
+short version: a filament profile copied from another slicer is a starting point, so flow ratio, max volumetric speed and temperature must be re-run on this printer, in the
+Orca wiki's order (temperature, max volumetric speed, pressure advance, flow, retraction). A Bambu printer already calibrates its own flow dynamics and vibration compensation;
+in Orca's calibration dialogs the flow calibration is switched off for it. Ringing, banding and arc fitting are covered there too, with the disagreements written down.
+
 ## 4. Compare the scenarios
 
 The script cannot know your printer's real time or filament use. It proposes three scenarios (Smooth, Balanced, Fast) with the layer count of each.

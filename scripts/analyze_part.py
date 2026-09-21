@@ -355,6 +355,27 @@ SRC = {
     "ellis-cooling": "https://ellis3dp.com/Print-Tuning-Guide/articles/cooling_and_layer_times.html",
     "3dprinterly-dome": "https://3dprinterly.com/how-to-3d-print-a-dome-or-sphere-without-supports/",
     "bambu-bridge": "https://wiki.bambulab.com/en/software/bambu-studio/parameter/bridge",
+    "mandarin3d": "https://mandarin3d.com/blog/text-and-engravings-best-practices-for-readable-3d-printed-text",
+    "printago-ironing": "https://printago.io/guides/orca-slicer-ironing",
+    "bambu-multicolor-text": "https://forum.bambulab.com/t/help-on-first-layer-multi-color-text-prints-on-2nd-layer/170340",
+    "orca-flush": "https://www.orcaslicer.com/wiki/print_settings/multimaterial/multimaterial_settings_flush_options",
+    "eolas-purge": "https://eolasprints.com/en-us/blogs/advanced-3d-printing/bambu-lab-ams-multi-colour-explained",
+    "qidi-dragon": "https://qidi3d.com/blogs/news/3d-print-articulated-dragons-guide",
+    "sovol-pip": "https://www.sovol3d.com/blogs/news/print-in-place-3d-printing-how-to-design-hinges-joints-and-moving-parts-that-actually-work",
+    "bambu-pip-forum": "https://forum.bambulab.com/t/print-in-place-hinge-tolerances/111715",
+    "qidi-fits": "https://qidi3d.com/blogs/news/how-to-3d-print-interlocking-parts-and-assemblies",
+    "cnc-inserts": "https://www.cnckitchen.com/blog/tips-and-tricks-for-heat-set-inserts",
+    "prusa-watertight": "https://help.prusa3d.com/article/watertight-prints_112324",
+    "obico-vase": "https://www.obico.io/blog/orca-slicers-spiral-vase-vase-mode-a-deep-dive/",
+    "gridpilot": "https://gridpilot.us/blog/gridfinity-print-settings-guide",
+    "bambu-large-prints": "https://forum.bambulab.com/t/large-prints-say-goodbye-to-warping/240898",
+    "meshra-lid": "https://meshra.ai/blog/3d-printed-box-with-a-lid",
+    "3dsourced-minis": "https://www.3dsourced.com/guides/fdm-3d-printing-miniatures-guide/",
+    "bambu-figures": "https://forum.bambulab.com/t/best-filament-and-setting-for-action-figure-models/7134",
+    "cnc-45": "https://www.cnckitchen.com/blog/stop-printing-flat-the-45-secret-for-stronger-parts",
+    "qidi-brackets": "https://us.qidi3d.com/blogs/print-lab/3d-printed-shelf-brackets-load-capacity-design",
+    "litho-guide": "https://www.3dprinterstuff.com/workshop/lithophane-3d-printing-guide",
+    "litho-forum": "https://forum.bambulab.com/t/printing-lithophanes-flat-or-vertical/84574",
     "project": "this project",
 }
 
@@ -364,6 +385,8 @@ ORCA_KEYS = {
     "wall_loops", "sparse_infill_density", "wall_generator", "ironing_type", "top_shell_layers", "seam_position", "seam_slope_type",
     "enable_support", "support_type", "support_interface_top_layers", "thick_bridges", "brim_type", "brim_width",
     "inner_wall_line_width", "sparse_infill_line_width", "sparse_infill_pattern", "elefant_foot_compensation",
+    "support_style", "outer_wall_speed", "initial_layer_speed", "bridge_flow", "spiral_mode", "ironing_flow", "ironing_speed",
+    "ironing_spacing", "xy_hole_compensation",
 }
 
 SMALL_MM = 25.0          # largest side at or under this: a small part that can overheat
@@ -371,6 +394,30 @@ THICK_MM = 40.0          # smallest side at or over this, and solid (with THICK_
 THICK_CM3 = 40.0
 FLAT_LARGE_MM2 = 4000.0  # bed contact of a wide, low part: warping risk
 FLAT_LARGE_H = 6.0
+
+
+# What the part is FOR, which a mesh cannot show. Chosen with --use, or asked as a question when unknown.
+USES = {
+    "text": ("text, plaque, keychain, nameplate", "raised or engraved lettering needs strokes wider than the nozzle"),
+    "multicolor": ("several colours with the AMS", "colour changes cost purge time and filament"),
+    "flexi": ("print-in-place, articulated, flexi toys", "the gap between moving parts must stay open"),
+    "fit": ("mates with another part: snap, press fit, screw boss", "a printed hole is smaller than modelled"),
+    "container": ("box, organizer, tray, bin, lid", "floors, walls and lids"),
+    "watertight": ("holds liquid, leak-proof", "seams and thin walls are the leak path"),
+    "vase": ("spiral vase", "one continuous wall, no seam"),
+    "figurine": ("figurine, miniature, organic model", "fine detail, supports on visible faces"),
+    "bracket": ("hook, bracket, wall mount, load-bearing", "the layers must not be pulled apart"),
+    "lithophane": ("lithophane or part seen against light", "infill and layer height show through"),
+}
+
+
+def detect_uses(features):
+    """Only what geometry can honestly suggest: an open container has floors below its rim and is mostly air."""
+    size = features["size_mm"]
+    solidity = features["volume_cm3"] * 1000.0 / max(size[0] * size[1] * size[2], 1e-6)
+    if features["flat_up_mm2"] - features["flat_top_mm2"] >= 300 and solidity < 0.6:
+        return ["container"]
+    return []
 
 
 def archetypes(features):
@@ -400,9 +447,10 @@ def archetypes(features):
     return found
 
 
-def recommend(features, finish, purpose, backlit, nozzle=NOZZLE):
+def recommend(features, finish, purpose, backlit, nozzle=NOZZLE, uses=()):
     cur, thin, size = features["current"], features["thin_wall_mm"], features["size_mm"]
     kinds = archetypes(features)
+    uses = set(uses) | (set(detect_uses(features)) if not uses else set())
     reasons, questions, settings, notes, rules = [], [], {}, [], []
 
     def rule(kind, key, value, why, src, status="sourced", apply=True):
@@ -429,6 +477,10 @@ def recommend(features, finish, purpose, backlit, nozzle=NOZZLE):
     else:
         layer = 0.16 if stair >= 0.30 else 0.20
         reasons.append(f"finish=standard, {stair:.0%} gentle slope -> {layer} mm layers")
+    for u, value in (("flexi", 0.16), ("watertight", 0.16), ("vase", 0.20), ("lithophane", 0.12), ("figurine", 0.12)):
+        if u in uses and not (finish == "fast" and u in ("figurine", "lithophane")):
+            layer = value
+            reasons.append(f"use={u} -> {value} mm layers: {USES[u][1]}")
     layer = snap_layer(layer)
     preset = PRESETS[layer]
     if 0.08 <= layer <= 0.12:
@@ -534,27 +586,119 @@ def recommend(features, finish, purpose, backlit, nozzle=NOZZLE):
         questions.append("Does it fit against another part (a hole, a pin, a snap)? If so, run Orca's tolerance test once and set the hole compensation from it: no page gives a universal value.")
         rule("fit", None, None, "Calibrate the X-Y hole and contour compensation with the tolerance test; starting points from a blog are 0.2 to 0.3 mm clearance and 0.1 to 0.15 mm interference.", "orca-tolerance", "unverified", apply=False)
 
+    # ---- what the part is for
+    if "text" in uses:
+        rule("text", None, None, "Raised text on a 0.4 mm nozzle: strokes 1.0 mm wide at least (1.5 better), 0.5 mm high at least (0.8 better), letters 4 mm tall at least (6 better). Engraved: 0.5 mm wide (0.8 better) and 0.3 mm deep (0.5 better). Bold sans-serif capitals. A blog reports 0.4 to 0.6 mm strokes as the absolute floor.", "mandarin3d", "disputed", apply=False)
+        rule("text", "ironing_type", "topmost", "Iron the top of raised text and plaques.", "printago-ironing")
+        rule("text", "ironing_flow", "10%", "Low flow (8 to 18% reported), 0.1 mm line spacing, 15 to 30 mm/s. The Orca wiki lists the settings but gives no defaults.", "printago-ironing")
+        rule("text", "ironing_spacing", 0.1, "0.1 mm line spacing.", "printago-ironing")
+        rule("text", "ironing_speed", 20, "15 to 30 mm/s.", "printago-ironing")
+        rule("text", None, None, "Wall generator for small letters is contested: a forum fix and a closed GitHub issue report lumpy Arachne on small text, the Orca wiki recommends Arachne for thin features. Slice both and step through the layers.", "https://github.com/OrcaSlicer/OrcaSlicer/issues/10364", "disputed", apply=False)
+        if thin["p10"] is not None and thin["p10"] < 1.0:
+            questions.append(f"Some strokes are about {thin['p10']} mm wide. Raised text wants 1.0 mm or more on a 0.4 mm nozzle. Thicken the letters?")
+    if "multicolor" in uses:
+        rule("multicolor", None, None, "Make coloured text a separate object or part and assign the filament to it: the paint tool gives uneven layers and colours. A 3 mm base with 0.8 mm text is a working example.", "bambu-multicolor-text", apply=False)
+        rule("multicolor", None, None, "Coloured text at least 0.6 mm thick (3 layers at 0.2), about 1 mm for readable contrast, because PLA is somewhat translucent.", "https://forum.bambulab.com/t/how-to-get-one-layer-color-text/192873", apply=False)
+        rule("multicolor", None, None, "Expect 15 to 25% of filament and time lost to purging on complex prints (a vendor blog, no per-change figure).", "eolas-purge", "unverified", apply=False)
+        rule("multicolor", None, None, "Flush into infill or support only works with the prime tower on, and only on dark, opaque parts: never white, translucent or thin-walled, or the mixed colour shows through.", "orca-flush", apply=False)
+        rule("multicolor", None, None, "Flush multiplier: about 0.6 for same-material changes (community), 1.2 to 2.0 when colour bleeds (one guide). Neither is confirmed on a primary page.", "https://www.3dprofilefix.com/guides/flushing-volumes-guide.html", "disputed", apply=False)
+        questions.append("How many colour changes, and which colours? Light-to-light and dark-to-dark orders purge less than light-to-dark.")
+    if "flexi" in uses:
+        rule("flexi", None, None, "Modelled clearance of 0.25 mm per side is the start (0.20 to 0.30 for PLA): under 0.15 welds shut. Bambu forum users report 0.1 to 0.2 working with tuned flow; other guides say 0.3 to 0.5 for hinges and chains. Print a tolerance test in 0.1 mm steps first.", "qidi-dragon", "disputed", apply=False)
+        rule("flexi", "enable_support", 0, "Supports jam joints.", "qidi-dragon")
+        rule("flexi", "wall_loops", 3, "Three walls, Arachne, pins upright.", "sovol-pip")
+        rule("flexi", "elefant_foot_compensation", 0.2, "The first layer squashes out and fuses the base; reported values run from 0.1 to 0.3 mm. Also model a 0.5 mm 45-degree chamfer on the bottom edges of mating parts.", "sovol-pip", "disputed")
+        rule("flexi", "outer_wall_speed", 50, "Outer wall 40 to 60 mm/s gives cleaner gap edges.", "qidi-dragon")
+        rule("flexi", "initial_layer_speed", 20, "First layer about 20 mm/s.", "qidi-dragon")
+        rule("flexi", "bridge_flow", 0.95, "Under-extruded bridges (0.90 to 0.95) do not sag into the gap.", "sovol-pip")
+        rule("flexi", "brim_type", "outer_only", "A 3 to 5 mm brim on complex bases.", "https://3dbite.com/articulated-and-print-in-place-models-how-they-actually-work/")
+        rule("flexi", "brim_width", 4, "Middle of 3 to 5 mm.", "https://3dbite.com/articulated-and-print-in-place-models-how-they-actually-work/", "heuristic")
+        rule("flexi", None, None, "Fan at 100% after layer 2 or 3, and let the part cool before flexing each joint through its full range, tail to head, without heat. The slicer's gap closing radius is 0.049 mm in this profile, far below half of a 0.2 mm gap, so it will not close it (read from the settings block; the reasoning is this project's).", "qidi-dragon", apply=False)
+    if "fit" in uses:
+        rule("fit", None, None, "Snap hook against catch: 0.10 to 0.20 mm on the latching face; a PLA hook at least 1.2 mm thick with a length to thickness ratio of 2:1 at least, 3:1 ideal; a lid on a box 0.20 to 0.25 mm per side.", "qidi-fits", apply=False)
+        rule("fit", None, None, "Press fit: interference of 0.05 to 0.15 mm (one guide); another summary says clearance instead. Calibrate the X-Y hole compensation with Orca's tolerance test: values of +0.1 to +0.2 mm are quoted, and printed holes come out about 0.25 mm small.", "qidi-fits", "disputed", apply=False)
+        rule("fit", None, None, "M3 heat-set insert: hole 4.2 mm as printed (4.0 if drilled), depth the insert length plus 0.5 to 1.5 mm, wall about 2 mm around it, boss 1.5 to 2 times the insert diameter, 4 to 6 walls.", "cnc-inserts", apply=False)
+        rule("fit", "wall_loops", max(walls, 4), "Screw bosses want 4 to 6 walls.", "sovol-pip", "heuristic")
+    if "container" in uses:
+        heavy = purpose == "load"
+        rule("container", "wall_loops", 4 if heavy else 3, "Organizers: 3 walls at least, 4 for heavy tools.", "gridpilot")
+        rule("container", "sparse_infill_density", "25%" if heavy else "12%", "10 to 15% for light storage, 20 to 30% for heavy (a vendor blog).", "gridpilot")
+        rule("container", None, None, "Top shell over sparse infill: 0.8 to 1.2 mm (5 to 6 layers at 0.2); raise infill to 20 to 25% if the top pillows. Sources disagree between 0.8 and 1.2.", "https://www.3dprofilefix.com/guides/how-to-fix-top-surface.html", "unverified", apply=False)
+        rule("container", None, None, "Lid: 0.2 mm per side for a friction fit (0.10 to 0.15 snug, 0.30 to 0.40 loose), lip 4 to 8 mm, walls 1.6 to 2.4 mm. Print orientation of the lid: no source confirmed it.", "meshra-lid", apply=False)
+        if max(size[0], size[1]) >= 150:
+            rule("container", "brim_type", "outer_only", "Large open boxes warp: brim about 4 mm, bed 5 to 10 C warmer, rounded corners, gyroid infill.", "bambu-large-prints")
+            rule("container", "brim_width", 4, "About 4 mm (Bambu forum guide).", "bambu-large-prints")
+    if "watertight" in uses:
+        rule("watertight", "wall_loops", 4, "Four walls is Prusa's minimum for PLA: perimeters matter far more than solid layers.", "prusa-watertight")
+        rule("watertight", None, None, "Flow ratio +0.02 to +0.05 and nozzle 5 to 10 C hotter for fuller lines; seams and the solid-to-perimeter transitions are the main leak path. A forum thread wants monotonic-line bottoms with 5 to 7 layers, Prusa found 2 to 7 all waterproof.", "prusa-watertight", "disputed", apply=False)
+    if "vase" in uses:
+        rule("vase", "spiral_mode", 1, "Spiral vase: one continuous wall, no seam, no top layers, no infill (Orca forces them). Worth it for decorative pieces, not for heavy use or overhangs; Prusa found a single perimeter waterproof only with flow at 105 to 110%.", "obico-vase")
+    if "figurine" in uses:
+        rule("figurine", "support_type", "tree(auto)", "Tree supports touch the model only at branch tips.", "stacksheriff")
+        rule("figurine", "support_style", "organic", "Organic tree style for figures; Bambu forum users suggest Hybrid instead.", "stacksheriff", "disputed")
+        rule("figurine", "enable_support", 1, "Figures with limbs or weapons almost always need supports.", "3dsourced-minis")
+        rule("figurine", "support_interface_top_layers", 2, "Two interface layers on detailed faces (three is rougher).", "stacksheriff")
+        rule("figurine", None, None, "Tilt the model 45 degrees on X in Orca's gizmo when limbs stick out at 90 degrees: fewer and simpler supports. Or print upright so supports touch only the least visible underside.", "3dsourced-minis", apply=False)
+        rule("figurine", None, None, "Layer height 0.12 to 0.16 for detail, 0.08 for showcase pieces; use variable layer height, thinner on face and hands.", "bambu-figures", apply=False)
+        rule("figurine", None, None, "Support angle: 45 degrees (one guide) against 55 to 60 (another); they define the angle differently, so check the definition before using either.", "stacksheriff", "disputed", apply=False)
+        rule("figurine", None, None, "For painting: about 220 grit to start, then 2 to 3 thin coats of filler primer; a 0.2 mm layer needs roughly three times the sanding of 0.05 mm. Wall count and infill for a hollow figure: no source found.", "https://3dprinterly.com/best-way-to-sand-smooth-3d-printed-objects-surfaces/", "unverified", apply=False)
+    if "bracket" in uses:
+        rule("bracket", "wall_loops", 6, "6 to 8 walls for brackets, with a 5:1 safety factor; other summaries say 4 to 6 with 40% infill.", "qidi-brackets", "disputed")
+        rule("bracket", None, None, "Orient so the load runs along the layers, not pulling them apart: in one test, layers flat to the bed held 63 MPa, at 45 degrees 40 MPa, upright 31 MPa. Around every screw hole keep at least 3 mm of solid boss.", "cnc-45", apply=False)
+    if "lithophane" in uses:
+        rule("lithophane", "sparse_infill_density", "100%", "Infill casts shadows and bright spots. Two guides differ: all walls (99 loops) against 100% rectilinear with 1 to 2 walls.", "litho-guide", "disputed")
+        rule("lithophane", None, None, "White PLA, thickness 0.6 to 0.8 mm at the brightest areas up to 3.0 mm at the darkest; upright for small pieces (brim 8 mm or more, 30 to 40 mm/s), flat for large ones, but the two sources disagree.", "litho-forum", "disputed", apply=False)
+    if not uses and purpose is None:
+        questions.append("What is it: text or keychain, print-in-place, box or organizer, figurine, bracket or hook, something that mates with another part, a vase, several colours? Each one changes the settings.")
+
     if purpose is None:
         questions.append("What is it for: decoration, a working part, or something carrying load? It sets walls and infill.")
     if finish is None:
         questions.append("Smooth or fast? Smooth is your usual choice; say how much time you have and I slice both and show the real numbers.")
 
-    order = {"curved": 0, "thick": 1, "thin": 2, "overhang": 3, "round_walls": 4, "flat_top": 5, "tall_thin": 6, "flat_large": 7, "bridge": 8, "small": 9, "fit": 10}
+    order = {"text": -3, "multicolor": -3, "flexi": -3, "fit": -3, "container": -3, "watertight": -3, "vase": -3, "figurine": -3, "bracket": -3, "lithophane": -3, "curved": 0, "thick": 1, "thin": 2, "overhang": 3, "round_walls": 4, "flat_top": 5, "tall_thin": 6, "flat_large": 7, "bridge": 8, "small": 9, "fit": 10}
     questions = list(dict.fromkeys(questions))
     return {"preset": preset, "layer_height": layer, "settings": settings, "reasons": reasons, "notes": notes,
-            "questions": questions, "kinds": kinds, "rules": sorted(rules, key=lambda r: order.get(r["kind"], 99)),
+            "questions": questions, "kinds": kinds, "uses": sorted(uses), "rules": sorted(rules, key=lambda r: order.get(r["kind"], 99)),
             "best_orientation": best, "orientation_worth_it": worth}
 
 
-def scenarios(features, purpose, backlit):
+def scenarios(features, purpose, backlit, uses=()):
     """Slices worth comparing; the numbers come from the slicer, not from here."""
     out = []
     labels = [("smooth", "Smooth"), ("standard", "Balanced"), ("fast", "Fast")]
     for finish, label in labels:
-        r = recommend(features, finish, purpose or "functional", backlit)
+        r = recommend(features, finish, purpose or "functional", backlit, uses=uses)
         out.append({"label": label, "finish": finish, "preset": r["preset"], "settings": r["settings"],
                     "layers": int(round(features["size_mm"][2] / r["layer_height"]))})
     return out
+
+
+# The machine and filament side of quality, which no part shape can fix. Printed by --machine.
+MACHINE = [
+    ("Run the calibrations in this order: temperature, max volumetric speed, pressure advance, flow, retraction. Blogs put flow before pressure advance, so this order is the wiki's, not a consensus.",
+     "https://www.orcaslicer.com/wiki/guides/calibration_guide", "disputed"),
+    ("On a Bambu printer, untick 'Flow calibration' in Orca's calibration dialogs: the printer's own automatic calibration would conflict.",
+     "https://www.orcaslicer.com/wiki/calibration/flow_ratio_calib", "sourced"),
+    ("The printer calibrates flow dynamics (its pressure advance, one value per filament) and vibration compensation on its own. It does NOT choose flow ratio, temperature or max volumetric speed for a third-party filament.",
+     "https://forum.bambulab.com/t/community-tech-talk-deep-dive-into-auto-flow-dynamics-calibration/225453", "sourced"),
+    ("A filament profile copied from another slicer or printer is a starting point: flow ratio, max volumetric speed and temperature belong to that printer, nozzle and spool. Re-run them on this printer.",
+     "https://3dbite.com/best-3d-printer-calibration-routine-bambu-a1-a2l/", "sourced"),
+    ("Flow ratio: filament setting, sane range 0.95 to 1.05, changed in steps of 0.01 (the YOLO method).",
+     "https://www.orcaslicer.com/wiki/material_settings/filament/material_flow_ratio_and_pressure_advance", "sourced"),
+    ("Max volumetric speed: test 5 to 20 mm3/s in 0.5 steps, then take 10 to 20% off the result.",
+     "https://www.orcaslicer.com/wiki/calibration/volumetric_speed_calib", "sourced"),
+    ("Ringing and ghosting: outer wall acceleration lower than inner wall, top surface equal to outer wall. No number was found, and Input Shaping in the wiki is written for Klipper and Marlin.",
+     "https://www.orcaslicer.com/wiki/print_settings/speed/speed_settings_acceleration", "unverified"),
+    ("Visible banding on outer walls: untick 'slow printing down for better layer cooling', or use 'don't slow down outer walls'. Speed changes leave bands, notably in silk PLA.",
+     "https://forum.bambulab.com/t/more-filament-settings-functionality-dont-slow-down-outer-walls/171832", "sourced"),
+    ("Arc fitting is not a quality feature: it changes how the path is encoded, and a closed issue reports bumps on outer walls that turning it off fixed. Bambu's wiki says it is on by default for high speed.",
+     "https://github.com/OrcaSlicer/OrcaSlicer/issues/7315", "disputed"),
+    ("Plain PLA is usually fine undried; silk, carbon-fibre and wood filaments need drying (45 to 55 C for 6 to 8 h). Stringing and bubbles are the sign of damp filament.",
+     "https://wiki.bambulab.com/en/filament/pla", "unverified"),
+    ("Textured PEI plate: wash with dish detergent and water, keep fingers off it, never use acetone. Oils from skin ruin first-layer adhesion.",
+     "https://wiki.bambulab.com/en/filament-acc/acc/pei-plate-clean-guide", "unverified"),
+]
 
 
 def split_global_and_object(per_object):
@@ -582,6 +726,7 @@ def report(features, rec, name):
              f"  overhang needing support    {cur['support_area_mm2']:>6} mm2   longest bridge {cur['longest_bridge_mm']} mm",
              f"  wall thickness, thin end    {features['thin_wall_mm']['p10']} mm (10th percentile; smallest sample {features['thin_wall_mm']['min']} mm, noisy at edges)",
              "", "Kind of part: " + (", ".join(f"{k} ({v})" for k, v in rec["kinds"].items()) or "plain, nothing special"),
+             "Use: " + (", ".join(rec["uses"]) or "not said"),
              "", "Standing up (up axis: height | contact | overhang | staircase)"]
     for axis, m in features["orientations"].items():
         mark = "  <- as given" if axis == "+Z" else ("  <- suggested" if axis == rec["best_orientation"] and rec["orientation_worth_it"] else "")
@@ -605,13 +750,25 @@ def report(features, rec, name):
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("model", help=".stl or .3mf (every object of a 3MF is analysed)")
+    parser.add_argument("model", nargs="?", default="", help=".stl or .3mf (every object of a 3MF is analysed)")
     parser.add_argument("--finish", choices=["smooth", "standard", "fast"], help="surface preference")
     parser.add_argument("--purpose", choices=["decorative", "functional", "load"])
     parser.add_argument("--backlit", action="store_true", help="the part is seen against light")
+    parser.add_argument("--use", default="", help="what the part is for, comma separated: " + ", ".join(USES))
+    parser.add_argument("--machine", action="store_true", help="print the machine and filament side of quality and exit")
     parser.add_argument("--nozzle", type=float, default=NOZZLE)
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args(argv)
+    if args.machine:
+        for text, source, status in MACHINE:
+            print(f"[{status}] {text}\n    {source}")
+        return 0
+    if not args.model:
+        parser.error("give a .stl or .3mf file (or use --machine)")
+    uses = [u.strip() for u in args.use.split(",") if u.strip()]
+    unknown = [u for u in uses if u not in USES]
+    if unknown:
+        parser.error(f"unknown --use {unknown}; choose from {', '.join(USES)}")
 
     parts = load_parts(args.model)
     if not parts:
@@ -620,11 +777,11 @@ def main(argv=None):
     for name, tris in parts:
         feats = analyze(name, tris, args.nozzle)
         results[name] = feats
-        recs[name] = recommend(feats, args.finish, args.purpose, args.backlit, args.nozzle)
+        recs[name] = recommend(feats, args.finish, args.purpose, args.backlit, args.nozzle, uses)
     plate, overrides = split_global_and_object(recs)
     if args.json:
         payload = {"objects": {n: {"features": results[n], "recommendation": recs[n],
-                                   "scenarios": scenarios(results[n], args.purpose, args.backlit)} for n in results},
+                                   "scenarios": scenarios(results[n], args.purpose, args.backlit, uses)} for n in results},
                    "plate_settings": plate, "object_overrides": overrides}
         print(json.dumps(payload, indent=2, default=float))
         return 0
