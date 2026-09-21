@@ -33,8 +33,9 @@ pitfalls. Then read only the part each step asks for, never whole files.
 
 ## The cycle
 
-1. **Model.** First ask whether a model already exists (search the public libraries with the user, and ask if they have a reference image or file: a generic
-   stand-in is worse than no answer). Then read `KB/modeling-method.md`: what to ask, what not to ask, print orientation,
+1. **Model.** First ask whether a model already exists: run `scripts/find_models.py "<terms>" --sort makes`, search the sites without an API through the web,
+   and show the user a **shortlist to choose from** (likes, downloads, makes, licence: a no-derivatives licence matters if the part will be adapted or sold).
+   Ask if they have a reference image or file: a generic stand-in is worse than no answer. Downloads are the user's click, from the model's page. Then read `KB/modeling-method.md`: what to ask, what not to ask, print orientation,
    tolerances, bed limit. Tool: `<CAD_TOOL>` (for example the Fusion MCP server, which needs the
    app open with an active document; if the connection is missing, say so).
 2. **Check.** Mesh verification (watertight, volume against the bounding box, size against the bed)

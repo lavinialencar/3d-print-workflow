@@ -7,6 +7,7 @@ All notable changes are recorded here. Format based on [Keep a Changelog](https:
 
 ### Added
 - `scripts/analyze_part.py`: measures a model (slopes, flat tops, round walls, overhangs, bridges, wall thickness, six orientations) and turns it into questions for the owner, global and per-object settings, and three scenarios to slice and compare. Reads STL and 3MF plates. Needs numpy.
+- `scripts/find_models.py`: before modeling, searches Printables for an existing model and prints a shortlist with likes, downloads, makes (people who printed it), licence and link. Read-only, no downloads. 7 tests with a fake network.
 - `docs/12-slicing-by-part.md`: the method, with a source or an honest "heuristic" label on every rule.
 - 15 tests for the analyzer, built on shapes with known answers (cube, sphere, cylinder, T bracket, thin plate).
 

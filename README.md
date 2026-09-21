@@ -83,7 +83,8 @@ Every project like this hides its gaps. This one lists them. **Verified** means 
 | Sending a job from Orca to a Bambu printer | 🟡 Worked once | by the author's account; the printer then showed the job running |
 | AMS recognises the converted profile | 🟡 Author reports it works | the converter keeps the id the slots already report; not independently checked |
 | Assistant modeling through a CAD MCP server | 🟡 Connected, not yet exercised | Autodesk Fusion's local MCP server connects; modeling a real part is still to do |
-| Part analysis: geometry to questions and settings | 🟡 Tested on synthetic shapes and 5 real parts | `scripts/analyze_part.py` measures slopes, overhangs, flat tops, walls and six orientations; the thresholds are heuristics that cite their source or say so, see [docs/12](docs/12-slicing-by-part.md). Not yet validated against prints |
+| Search for an existing model first (Printables) | ✅ Verified live | `scripts/find_models.py` lists likes, downloads, makes and licence; unofficial endpoint, can change; MakerWorld and Thingiverse have no open API and are searched through the web |
+| Part analysis: geometry to questions and settings | 🟡 Tested on synthetic shapes and 4 real files | `scripts/analyze_part.py` measures slopes, overhangs, flat tops, walls and six orientations; the thresholds are heuristics that cite their source or say so, see [docs/12](docs/12-slicing-by-part.md). Not yet validated against prints |
 | Per-part slicing overrides from the command line | 🟡 Mechanics proven | 4 walls, 25% infill and a brim reached the G-code with no GUI; the rest of the profile may differ from the GUI, use `gcode_settings_diff.py` to check |
 | Other Bambu models (X1, A1, P1) | ⚪ Untested | same protocol family, different profiles |
 | Linux and Windows | ⚪ Untested | scripts are standard library; only the scheduler is macOS-specific |
@@ -145,7 +146,7 @@ Everything runs on your computer and talks to the printer over your local networ
 │   ├── 11-privacy-and-publishing.md
 │   ├── 12-slicing-by-part.md        measure the shape, ask, decide, compare scenarios
 │   └── examples/example-session.md    what a session looks like (illustrative)
-├── scripts/                     the six tools (standard library, except the part analyzer, which needs numpy)
+├── scripts/                     the seven tools (standard library, except the part analyzer, which needs numpy)
 ├── skill/print-conductor/       the thin conductor skill, as a template
 ├── knowledge-base-template/     five Markdown notes to copy into your own
 ├── config/                      example config files (never the real ones)

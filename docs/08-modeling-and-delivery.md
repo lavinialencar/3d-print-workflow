@@ -8,6 +8,28 @@ This is the method behind step 1 and 2 of the workflow. The short checklist vers
 A mistake in the model costs seconds to fix in the CAD tool, minutes to fix after slicing, and hours after a failed print. So
 every check is placed as **early** as it can go. The order below is that order.
 
+## 0. Look for it before you model it
+
+The best model is often already made, printed and reviewed by other people. Searching first saves hours and starts from something that has survived real printers.
+
+```bash
+python3 scripts/find_models.py "controller wall mount" --sort makes
+```
+
+It prints a numbered shortlist from Printables with the signals that matter:
+
+| Signal | What it tells you |
+|---|---|
+| **makes** (people who posted a finished print) | the best hint that the model is printable; sort by it |
+| downloads and likes | popularity, which is not the same as quality |
+| licence | a *no derivatives* licence matters if you plan to adapt the part, and a *non-commercial* one if you plan to sell it |
+| date | old models may predate today's printers and slicers |
+
+The sites without an open search API (MakerWorld, Thingiverse, Thangs) are searched through the web instead. **Downloading is the user's click**, from the model's page,
+so the licence and the author's notes are seen. Only when nothing fits, or the user has a reference image or file of their own, does the assistant model from scratch.
+
+The Printables endpoint is unofficial: it can change or start blocking requests. If it fails, the script says so and the assistant falls back to the web.
+
 ## 1. Ask only what you cannot know
 
 | Ask | Do not ask |
