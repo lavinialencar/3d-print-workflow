@@ -16,7 +16,7 @@ The best model is often already made, printed and reviewed by other people. Sear
 python3 scripts/find_models.py "controller wall mount" --sort makes
 ```
 
-It prints a numbered shortlist from Printables with the signals that matter:
+It prints one numbered shortlist from Printables and Thingiverse with the signals that matter:
 
 | Signal | What it tells you |
 |---|---|
@@ -25,7 +25,7 @@ It prints a numbered shortlist from Printables with the signals that matter:
 | licence | a *no derivatives* licence matters if you plan to adapt the part, and a *non-commercial* one if you plan to sell it |
 | date | old models may predate today's printers and slicers |
 
-The other sites are covered by a browser tool, because their search pages read fine in a real browser even though scripts are blocked: **MakerWorld**, **Thingiverse** (wait a few seconds for the list; it carries ads and weaker relevance) and **Thangs** (many paid models). Read the results list, never the download button. The counts these pages show do not say which is likes and which is downloads, so do not claim it. **Cults3D** shows a bot check: do not get around it, search there by hand. **Thingiverse** also has an official API that needs a free app token from your own account; it is optional, since the browser already reaches the same results. Thangs also offers search by image, useful when you only have a picture.
+**Thingiverse** is searched by the same script through its official API. It needs a free app token from your own account (create the app at `thingiverse.com/apps/create`, copy the **App Token**, not the Client ID or Secret, into `~/.config/print-workflow/thingiverse-token` with `pbpaste` so it never appears in a chat); the token is sent in a header, never in the URL, and the search hides adult and private things and drops hits that ignore half of your words. Thingiverse does not show download counts in search, so that column reads n/a; it does show **makes** and whether the licence allows derivatives. New apps may wait in an approval queue, and a 401 in the meantime is normal. The other sites are covered by a browser tool, because their search pages read fine in a real browser even though scripts are blocked: **MakerWorld** and **Thangs** (many paid models). Read the results list, never the download button. The counts these pages show do not say which is likes and which is downloads, so do not claim it. **Cults3D** shows a bot check: do not get around it, search there by hand. Thangs also offers search by image, useful when you only have a picture.
 so the licence and the author's notes are seen. Only when nothing fits, or the user has a reference image or file of their own, does the assistant model from scratch.
 
 The Printables endpoint is unofficial: it can change or start blocking requests. If it fails, the script says so and the assistant falls back to the web.
