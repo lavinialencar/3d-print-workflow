@@ -1,0 +1,22 @@
+# Secrets and per-machine state: these must NEVER be committed
+bambu-printers.json
+ntfy.json
+monitor-state.json
+monitor.log
+*.local.json
+.env
+.env.*
+*.pem
+*.key
+
+# Generated on your machine
+*.plist
+out/
+__pycache__/
+*.pyc
+.pytest_cache/
+.DS_Store
+
+# Slicer output can contain your printer's identity in its header
+*.gcode
+*.gcode.3mf

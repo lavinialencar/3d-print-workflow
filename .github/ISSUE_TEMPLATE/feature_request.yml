@@ -1,0 +1,22 @@
+name: Feature request
+description: An idea, a missing printer, a missing OS
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What are you trying to do?
+      description: Describe the problem first, then any solution you have in mind
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: What would help
+  - type: checkboxes
+    id: help
+    attributes:
+      label: Would you like to help build it?
+      options:
+        - label: Yes, I can test it on my hardware
+        - label: Yes, I can send a pull request

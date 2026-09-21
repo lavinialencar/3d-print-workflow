@@ -1,0 +1,88 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 620" width="900" height="620" role="img" aria-labelledby="t d" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif">
+  <title id="t">Architecture: what runs where</title>
+  <desc id="d">Your computer runs the assistant, the CAD tool, the slicer and the monitor. The slicer sends jobs to your printer over your local network, and the monitor reads its state through an adapter for your printer family. The monitor pushes alerts through ntfy to your phone. Secrets live in a private folder outside the repository.</desc>
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M2 1 L8 5 L2 9" fill="none" stroke="#6b7280" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></marker>
+    <marker id="b" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M2 1 L8 5 L2 9" fill="none" stroke="#185FA5" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></marker>
+  </defs>
+  <rect width="900" height="620" rx="18" fill="#ffffff"/>
+  <rect x="0.5" y="0.5" width="899" height="619" rx="18" fill="none" stroke="#e5e7eb"/>
+  <text x="450" y="44" text-anchor="middle" font-size="24" font-weight="600" fill="#111827">What runs where</text>
+  <text x="450" y="68" text-anchor="middle" font-size="14" fill="#6b7280">Everything stays on your local network. Only the alert goes out, through ntfy.</text>
+
+  <!-- computer -->
+  <rect x="30" y="92" width="400" height="368" rx="14" fill="#f9fafb" stroke="#9ca3af" stroke-width="1.5"/>
+  <text x="50" y="120" font-size="16" font-weight="600" fill="#111827">Your computer</text>
+
+  <rect x="50" y="136" width="360" height="76" rx="10" fill="#E1F5EE" stroke="#0F6E56"/>
+  <text x="66" y="160" font-size="14.5" font-weight="600" fill="#085041">Claude Code + conductor skill</text>
+  <text x="66" y="180" font-size="12.5" fill="#0F6E56">Keeps the order and the rules; reads your notes.</text>
+  <text x="66" y="198" font-size="12.5" fill="#0F6E56">Never starts a print.</text>
+
+  <rect x="50" y="224" width="172" height="76" rx="10" fill="#E1F5EE" stroke="#0F6E56"/>
+  <text x="64" y="248" font-size="14" font-weight="600" fill="#085041">CAD tool</text>
+  <text x="64" y="267" font-size="12.5" fill="#0F6E56">Local MCP server on</text>
+  <text x="64" y="284" font-size="12.5" fill="#0F6E56">127.0.0.1 (app open)</text>
+
+  <rect x="238" y="224" width="172" height="76" rx="10" fill="#E1F5EE" stroke="#0F6E56"/>
+  <text x="252" y="248" font-size="14" font-weight="600" fill="#085041">OrcaSlicer</text>
+  <text x="252" y="267" font-size="12.5" fill="#0F6E56">GUI sends; the CLI is used</text>
+  <text x="252" y="284" font-size="12.5" fill="#0F6E56">by the gcode skill</text>
+
+  <rect x="50" y="312" width="172" height="76" rx="10" fill="#f3f4f6" stroke="#9ca3af"/>
+  <text x="64" y="336" font-size="14" font-weight="600" fill="#374151">Knowledge base</text>
+  <text x="64" y="355" font-size="12.5" fill="#6b7280">Plain Markdown notes:</text>
+  <text x="64" y="372" font-size="12.5" fill="#6b7280">profile, log, queue</text>
+
+  <rect x="238" y="312" width="172" height="76" rx="10" fill="#E6F1FB" stroke="#185FA5"/>
+  <text x="252" y="336" font-size="14" font-weight="600" fill="#0C447C">print_monitor.py</text>
+  <text x="252" y="355" font-size="12.5" fill="#185FA5">Read-only, every 3 min,</text>
+  <text x="252" y="372" font-size="12.5" fill="#185FA5">run by launchd</text>
+
+  <rect x="50" y="402" width="360" height="42" rx="10" fill="#FEF3C7" stroke="#F59E0B" stroke-dasharray="5 4"/>
+  <text x="230" y="428" text-anchor="middle" font-size="12.5" font-weight="600" fill="#78350F">Private config: ~/.config/print-workflow/ (never in the repo)</text>
+
+  <!-- printer -->
+  <rect x="520" y="92" width="350" height="230" rx="14" fill="#f9fafb" stroke="#9ca3af" stroke-width="1.5"/>
+  <text x="540" y="120" font-size="16" font-weight="600" fill="#111827">Printer, on your LAN</text>
+  <rect x="540" y="136" width="310" height="80" rx="10" fill="#E1F5EE" stroke="#0F6E56"/>
+  <text x="556" y="160" font-size="14.5" font-weight="600" fill="#085041">Your printer</text>
+  <text x="556" y="180" font-size="12.5" fill="#0F6E56">Bambu: LAN Only + Developer Mode.</text>
+  <text x="556" y="198" font-size="12.5" fill="#0F6E56">Klipper, OctoPrint: web API. Fixed IP.</text>
+  <rect x="540" y="228" width="310" height="76" rx="10" fill="#E1F5EE" stroke="#0F6E56"/>
+  <text x="556" y="252" font-size="14.5" font-weight="600" fill="#085041">State it reports</text>
+  <text x="556" y="272" font-size="12.5" fill="#0F6E56">Printing, paused, finished, failed, progress.</text>
+  <text x="556" y="290" font-size="12.5" fill="#0F6E56">Bambu also reports each AMS slot.</text>
+
+  <!-- ntfy + phone -->
+  <rect x="520" y="352" width="160" height="100" rx="14" fill="#f9fafb" stroke="#9ca3af" stroke-width="1.5"/>
+  <text x="600" y="382" text-anchor="middle" font-size="15" font-weight="600" fill="#111827">ntfy</text>
+  <text x="600" y="404" text-anchor="middle" font-size="12.5" fill="#6b7280">ntfy.sh or your</text>
+  <text x="600" y="421" text-anchor="middle" font-size="12.5" fill="#6b7280">own server</text>
+  <rect x="710" y="352" width="160" height="100" rx="14" fill="#f9fafb" stroke="#9ca3af" stroke-width="1.5"/>
+  <text x="790" y="382" text-anchor="middle" font-size="15" font-weight="600" fill="#111827">Your phone</text>
+  <text x="790" y="404" text-anchor="middle" font-size="12.5" fill="#6b7280">"Print finished",</text>
+  <text x="790" y="421" text-anchor="middle" font-size="12.5" fill="#6b7280">"Print paused", ...</text>
+  <line x1="680" y1="402" x2="706" y2="402" stroke="#6b7280" stroke-width="1.6" marker-end="url(#a)"/>
+
+  <!-- arrow 1: Orca sends job -->
+  <path d="M410 262 L456 262 L456 176 L536 176" fill="none" stroke="#6b7280" stroke-width="1.8" marker-end="url(#a)"/>
+  <circle cx="456" cy="219" r="11" fill="#374151"/><text x="456" y="224" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">1</text>
+  <!-- arrow 2: monitor reads state -->
+  <path d="M410 350 L490 350 L490 266 L536 266" fill="none" stroke="#185FA5" stroke-width="1.8" stroke-dasharray="6 4" marker-end="url(#b)"/>
+  <circle cx="490" cy="308" r="11" fill="#185FA5"/><text x="490" y="313" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">2</text>
+  <!-- arrow 3: monitor pushes alert -->
+  <path d="M410 374 L516 374" fill="none" stroke="#185FA5" stroke-width="1.8" marker-end="url(#b)"/>
+  <circle cx="462" cy="374" r="11" fill="#185FA5"/><text x="462" y="379" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">3</text>
+
+  <!-- legend + why -->
+  <rect x="30" y="484" width="840" height="108" rx="12" fill="#f9fafb" stroke="#d1d5db"/>
+  <circle cx="56" cy="508" r="10" fill="#374151"/><text x="56" y="512" text-anchor="middle" font-size="12" font-weight="700" fill="#fff">1</text>
+  <text x="76" y="513" font-size="13" fill="#374151">the slicer sends the job (Bambu: FTPS, port 990)</text>
+  <circle cx="456" cy="508" r="10" fill="#185FA5"/><text x="456" y="512" text-anchor="middle" font-size="12" font-weight="700" fill="#fff">2</text>
+  <text x="476" y="513" font-size="13" fill="#374151">the monitor reads state (MQTT 8883 or HTTP)</text>
+  <circle cx="56" cy="536" r="10" fill="#185FA5"/><text x="56" y="540" text-anchor="middle" font-size="12" font-weight="700" fill="#fff">3</text>
+  <text x="76" y="541" font-size="13" fill="#374151">the monitor pushes an alert over HTTPS, only when the state changes</text>
+  <line x1="50" y1="558" x2="850" y2="558" stroke="#e5e7eb"/>
+  <text x="450" y="580" text-anchor="middle" font-size="13" fill="#14532d">Why this shape: the monitor is plain Python (no AI tokens). The assistant is needed only when you ask.</text>
+</svg>

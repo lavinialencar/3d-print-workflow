@@ -1,0 +1,103 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 590" width="900" height="590" role="img" aria-labelledby="t d" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif">
+  <title id="t">The print workflow: from idea to a finished, logged print</title>
+  <desc id="d">Seven steps: model, check, recommend slicing, slice, send, monitor, log. Two steps are human checkpoints, and monitoring is automatic.</desc>
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M2 1 L8 5 L2 9" fill="none" stroke="#6b7280" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></marker>
+  </defs>
+  <rect width="900" height="590" rx="18" fill="#ffffff"/>
+  <rect x="0.5" y="0.5" width="899" height="589" rx="18" fill="none" stroke="#e5e7eb"/>
+  <text x="450" y="46" text-anchor="middle" font-size="24" font-weight="600" fill="#111827">From idea to a finished, logged print</text>
+  <text x="450" y="70" text-anchor="middle" font-size="14" fill="#6b7280">Seven steps. The assistant does the tedious parts. You stay in charge of three decisions.</text>
+
+  <!-- legend -->
+  <rect x="200" y="92" width="14" height="14" rx="3" fill="#E1F5EE" stroke="#0F6E56"/><text x="222" y="104" font-size="13" fill="#374151">assistant does it</text>
+  <rect x="352" y="92" width="14" height="14" rx="3" fill="#FAEEDA" stroke="#854F0B"/><text x="374" y="104" font-size="13" fill="#374151">you decide</text>
+  <rect x="470" y="92" width="14" height="14" rx="3" fill="#E6F1FB" stroke="#185FA5"/><text x="492" y="104" font-size="13" fill="#374151">runs on its own</text>
+
+  <!-- row 1 -->
+  <g>
+    <rect x="40" y="130" width="190" height="130" rx="12" fill="#E1F5EE" stroke="#0F6E56" stroke-width="1.5"/>
+    <circle cx="66" cy="156" r="14" fill="#0F6E56"/><text x="66" y="161" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">1</text>
+    <text x="90" y="161" font-size="17" font-weight="600" fill="#085041">Model</text>
+    <text x="58" y="190" font-size="13" fill="#0F6E56">CAD tool, driven through</text>
+    <text x="58" y="207" font-size="13" fill="#0F6E56">an MCP connector, or</text>
+    <text x="58" y="224" font-size="13" fill="#0F6E56">a script</text>
+    <text x="58" y="247" font-size="12" fill="#085041" font-weight="600">Reads modeling-method.md</text>
+  </g>
+  <g>
+    <rect x="260" y="130" width="190" height="130" rx="12" fill="#E1F5EE" stroke="#0F6E56" stroke-width="1.5"/>
+    <circle cx="286" cy="156" r="14" fill="#0F6E56"/><text x="286" y="161" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">2</text>
+    <text x="310" y="161" font-size="17" font-weight="600" fill="#085041">Check</text>
+    <text x="278" y="190" font-size="13" fill="#0F6E56">Mesh: watertight, volume,</text>
+    <text x="278" y="207" font-size="13" fill="#0F6E56">size vs bed. Conference</text>
+    <text x="278" y="224" font-size="13" fill="#0F6E56">board as a PNG</text>
+    <text x="278" y="247" font-size="12" fill="#085041" font-weight="600">Catches solid parts early</text>
+  </g>
+  <g>
+    <rect x="480" y="130" width="190" height="130" rx="12" fill="#FAEEDA" stroke="#854F0B" stroke-width="1.5"/>
+    <circle cx="506" cy="156" r="14" fill="#854F0B"/><text x="506" y="161" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">3</text>
+    <text x="530" y="161" font-size="17" font-weight="600" fill="#633806">Recommend</text>
+    <text x="498" y="190" font-size="13" fill="#854F0B">Slicing settings for THIS</text>
+    <text x="498" y="207" font-size="13" fill="#854F0B">part, each with the reason</text>
+    <text x="498" y="224" font-size="13" fill="#854F0B">and where it is in the app</text>
+    <text x="498" y="247" font-size="12" fill="#633806" font-weight="600">YOU approve it</text>
+  </g>
+  <g>
+    <rect x="700" y="130" width="160" height="130" rx="12" fill="#E1F5EE" stroke="#0F6E56" stroke-width="1.5"/>
+    <circle cx="726" cy="156" r="14" fill="#0F6E56"/><text x="726" y="161" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">4</text>
+    <text x="750" y="161" font-size="17" font-weight="600" fill="#085041">Slice</text>
+    <text x="718" y="190" font-size="13" fill="#0F6E56">OrcaSlicer from the</text>
+    <text x="718" y="207" font-size="13" fill="#0F6E56">command line, then</text>
+    <text x="718" y="224" font-size="13" fill="#0F6E56">validate the G-code</text>
+  </g>
+  <line x1="230" y1="195" x2="256" y2="195" stroke="#6b7280" stroke-width="1.6" marker-end="url(#a)"/>
+  <line x1="450" y1="195" x2="476" y2="195" stroke="#6b7280" stroke-width="1.6" marker-end="url(#a)"/>
+  <line x1="670" y1="195" x2="696" y2="195" stroke="#6b7280" stroke-width="1.6" marker-end="url(#a)"/>
+
+  <!-- connector down -->
+  <path d="M780 262 L780 292 L135 292 L135 322" fill="none" stroke="#6b7280" stroke-width="1.6" marker-end="url(#a)"/>
+
+  <!-- row 2 -->
+  <g>
+    <rect x="40" y="324" width="190" height="130" rx="12" fill="#FAEEDA" stroke="#854F0B" stroke-width="1.5"/>
+    <circle cx="66" cy="350" r="14" fill="#854F0B"/><text x="66" y="355" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">5</text>
+    <text x="90" y="355" font-size="17" font-weight="600" fill="#633806">Send</text>
+    <text x="58" y="384" font-size="13" fill="#854F0B">From the slicer over your</text>
+    <text x="58" y="401" font-size="13" fill="#854F0B">local network. Starting the</text>
+    <text x="58" y="418" font-size="13" fill="#854F0B">print is done on the printer</text>
+    <text x="58" y="441" font-size="12" fill="#633806" font-weight="600">YOU press send, YOU start</text>
+  </g>
+  <g>
+    <rect x="260" y="324" width="190" height="130" rx="12" fill="#E6F1FB" stroke="#185FA5" stroke-width="1.5"/>
+    <circle cx="286" cy="350" r="14" fill="#185FA5"/><text x="286" y="355" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">6</text>
+    <text x="310" y="355" font-size="17" font-weight="600" fill="#0C447C">Monitor</text>
+    <text x="278" y="384" font-size="13" fill="#185FA5">A script reads the printer</text>
+    <text x="278" y="401" font-size="13" fill="#185FA5">state every few minutes and</text>
+    <text x="278" y="418" font-size="13" fill="#185FA5">sends a push to your phone</text>
+    <text x="278" y="441" font-size="12" fill="#0C447C" font-weight="600">Read-only, never controls</text>
+  </g>
+  <g>
+    <rect x="480" y="324" width="190" height="130" rx="12" fill="#E1F5EE" stroke="#0F6E56" stroke-width="1.5"/>
+    <circle cx="506" cy="350" r="14" fill="#0F6E56"/><text x="506" y="355" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">7</text>
+    <text x="530" y="355" font-size="17" font-weight="600" fill="#085041">Log and learn</text>
+    <text x="498" y="384" font-size="13" fill="#0F6E56">Grams from the G-code, the</text>
+    <text x="498" y="401" font-size="13" fill="#0F6E56">outcome from the printer,</text>
+    <text x="498" y="418" font-size="13" fill="#0F6E56">what worked into your notes</text>
+    <text x="498" y="441" font-size="12" fill="#085041" font-weight="600">Next advice gets better</text>
+  </g>
+  <line x1="230" y1="389" x2="256" y2="389" stroke="#6b7280" stroke-width="1.6" marker-end="url(#a)"/>
+  <line x1="450" y1="389" x2="476" y2="389" stroke="#6b7280" stroke-width="1.6" marker-end="url(#a)"/>
+
+  <!-- side note -->
+  <rect x="700" y="324" width="160" height="130" rx="12" fill="#f9fafb" stroke="#d1d5db" stroke-dasharray="5 4"/>
+  <text x="780" y="352" text-anchor="middle" font-size="14" font-weight="600" fill="#374151">All along</text>
+  <text x="780" y="376" text-anchor="middle" font-size="12.5" fill="#6b7280">The conductor skill</text>
+  <text x="780" y="393" text-anchor="middle" font-size="12.5" fill="#6b7280">keeps the order and the</text>
+  <text x="780" y="410" text-anchor="middle" font-size="12.5" fill="#6b7280">rules; the knowledge</text>
+  <text x="780" y="427" text-anchor="middle" font-size="12.5" fill="#6b7280">lives in your notes</text>
+
+  <!-- checkpoint band -->
+  <rect x="40" y="486" width="820" height="68" rx="12" fill="#FEF3C7" stroke="#F59E0B"/>
+  <text x="450" y="514" text-anchor="middle" font-size="15" font-weight="600" fill="#78350F">Three human checkpoints, always</text>
+  <text x="450" y="538" text-anchor="middle" font-size="13.5" fill="#78350F">You approve the slicing recommendation  |  You press send  |  You start the print on the printer</text>
+</svg>

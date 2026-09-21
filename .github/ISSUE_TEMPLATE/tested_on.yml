@@ -1,0 +1,41 @@
+name: Tested on my setup
+description: Tell us what you verified on real hardware. This is the most valuable kind of report.
+labels: [compatibility]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        The README marks some pieces as untested. If you ran one on your hardware, tell us, working **or** not.
+  - type: input
+    id: printer
+    attributes:
+      label: Printer model and firmware
+    validations:
+      required: true
+  - type: input
+    id: os
+    attributes:
+      label: Operating system and Python version
+    validations:
+      required: true
+  - type: checkboxes
+    id: pieces
+    attributes:
+      label: What did you try?
+      options:
+        - label: Read printer state (`print_monitor.py --print-status`)
+        - label: Alert on start
+        - label: Alert on finish
+        - label: Alert on pause or failure
+        - label: "Alert: printer not responding"
+        - label: Studio to Orca profile converter
+        - label: Command-line slicing through the `gcode` skill
+        - label: Sending a job from the slicer
+        - label: Assistant modeling through a CAD MCP server
+  - type: textarea
+    id: notes
+    attributes:
+      label: What worked, what did not, what you had to change
+      description: Redact IP, MAC, serial number, access code and topic.
+    validations:
+      required: true

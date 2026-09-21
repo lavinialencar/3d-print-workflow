@@ -1,0 +1,9 @@
+{
+  "printers": {
+    "p2s": {
+      "host": "192.0.2.10",
+      "access_code": "REPLACE-WITH-THE-CODE-SHOWN-ON-YOUR-PRINTER-SCREEN",
+      "model": "p2s"
+    }
+  }
+}

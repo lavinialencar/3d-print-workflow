@@ -1,0 +1,16 @@
+# Secret scanning config for gitleaks (run in CI). Extends the default ruleset.
+title = "3d-print-workflow"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Documented placeholders in examples and docs are not secrets"
+regexes = [
+  '''REPLACE[-_A-Za-z0-9]*''',
+  '''192\.0\.2\.\d+''',
+]
+paths = [
+  '''tests/test_scanner\.py''',
+  '''tools/scan_personal_data\.py''',
+]

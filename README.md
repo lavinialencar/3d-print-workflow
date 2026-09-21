@@ -1,0 +1,216 @@
+<div align="center">
+
+# 3d-print-workflow
+
+**An AI-assisted 3D printing workflow for any printer, with a battle-tested track for Bambu Lab's closed ecosystem.**<br>
+Model, check, slice, send, monitor and log, with phone alerts. A safe, documented, honestly-labelled template: clone it, fill in your own details, print.
+
+[![CI](https://github.com/lavinialencar/3d-print-workflow/actions/workflows/ci.yml/badge.svg)](https://github.com/lavinialencar/3d-print-workflow/actions/workflows/ci.yml)
+![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)
+![Python 3.8+](https://img.shields.io/badge/python-3.8%2B-3776AB.svg)
+![Platform: macOS](https://img.shields.io/badge/platform-macOS-lightgrey.svg)
+![Dependencies: none](https://img.shields.io/badge/runtime%20dependencies-none-brightgreen.svg)
+![Tests](https://img.shields.io/badge/tests-passing-brightgreen.svg)
+
+<img src="assets/workflow.svg" alt="The workflow: model, check, recommend, slice, send, monitor, log" width="860">
+
+</div>
+
+> **Unofficial.** This project is not affiliated with, endorsed by or supported by Bambu Lab, Autodesk, Anthropic, Prusa, the Klipper, Moonraker or OctoPrint
+> projects, or the OrcaSlicer project. LAN access modes change how your printer is reachable; you are responsible for your own network and hardware.
+
+---
+
+## Contents
+
+[Why this exists](#why-this-exists) · [Choose your printer](#choose-your-printer) · [What you get](#what-you-get) · [What is proven, and what is not](#what-is-proven-and-what-is-not) ·
+[Quick start](#quick-start) · [How it fits together](#how-it-fits-together) · [Repository map](#repository-map) ·
+[Principles](#principles) · [FAQ](#faq) · [Roadmap](#roadmap) · [Contributing](#contributing) · [License and credits](#license-and-credits)
+
+## Why this exists
+
+The workflow (model, check, slice, send, monitor, log) is the same for every printer. What differs is how much the printer's maker lets you reach it. Three
+problems show up as soon as you want your own tools in the loop, and the first two are worst on **Bambu Lab**:
+
+1. **A locked-down printer silences your tools.** Bambu's LAN Only mode cuts the cloud, and with it the Handy app's push notifications. Nobody tells you when a
+   print finishes, fails or pauses. On Klipper and OctoPrint the same alerts are easy, and still not built in.
+2. **Moving from Bambu Studio to OrcaSlicer looks trivial and is not.** A filament profile copied across is *silently ignored*, loses its identity in the AMS,
+   or crashes command-line slicing. Three separate traps, none with an error message.
+3. **AI assistants over-promise.** Ask one to "set up my printing workflow" and you get a confident description of things that were never run.
+
+This repository is the result of building the working version, and keeping notes on what actually happened.
+
+## Choose your printer
+
+| Printer | Track | Status |
+|---|---|---|
+| **Bambu Lab** (P2S; X1, A1, P1 share the protocol) | [The Bambu Lab track](docs/03-bambu-lab-track.md): LAN Only, Developer Mode, the traps and the ways around them | ✅ verified on a P2S |
+| **Klipper** (Moonraker) | [Other printers](docs/05-other-printers.md#klipper-with-moonraker) | 🟡 experimental |
+| **OctoPrint** | [Other printers](docs/05-other-printers.md#octoprint) | 🟡 experimental |
+| **Anything else** | [Add an adapter](docs/05-other-printers.md#adding-your-own-printer): one small pure function | ⚪ contribute |
+
+Modeling, checking, recommending, slicing (OrcaSlicer, PrusaSlicer or CuraEngine) and logging do not depend on the printer at all.
+
+## What you get
+
+| | | |
+|---|---|---|
+| **A monitor with phone alerts** | `scripts/print_monitor.py` | Read-only. Tells you when a print starts, finishes, fails, pauses, is cancelled, or the printer goes silent. Adapters for Bambu Lab, Klipper and OctoPrint. Plain Python, no AI tokens |
+| **A profile converter** | `scripts/studio_to_orca_filament.py` | Turns a Bambu Studio filament profile into one OrcaSlicer accepts, and explains the three traps |
+| **A scheduler installer** | `scripts/print_monitor_launchd.py` | Runs the monitor every few minutes on macOS, with `print`, `install`, `status`, `uninstall` |
+| **A consumption reader** | `scripts/gcode_consumption.py` | Reads grams and length from a sliced file and writes the log row for you |
+| **A conductor skill** | `skill/print-conductor/` | A thin instruction file that keeps the cycle in order and the rules unbroken |
+| **A knowledge-base template** | `knowledge-base-template/` | Five plain Markdown notes: hub, printer profile, modeling checklist, filament log, print queue |
+| **Guards** | `tools/` | A personal-data scanner and a documentation link checker, both run in CI |
+| **Twelve guides** | `docs/` | Step by step, with checkpoints, diagrams, an example session and a troubleshooting table |
+
+## What is proven, and what is not
+
+Every project like this hides its gaps. This one lists them. **Verified** means it was run on a real printer by the author.
+
+| Piece | Status | Detail |
+|---|---|---|
+| Read printer state (Bambu Lab P2S, LAN Only + Developer Mode) | ✅ Verified | real printer |
+| Alert when a print **starts** | ✅ Verified | push received on a phone |
+| Alert when a print **pauses**, with the error code | ✅ Verified | push received |
+| Alert when a print **finishes** | 🟡 Not yet observed | the logic is unit-tested; a real finish was not seen |
+| Alert "printer not responding" | 🟡 Logic tested | unit-tested; not yet seen live |
+| Klipper (Moonraker) and OctoPrint adapters | 🟡 Experimental | unit-tested on sample payloads from the public API docs; **never run on a real printer** |
+| Studio to Orca profile converter | ✅ Verified | reproduces a profile that works in a real Orca install, key for key; unit-tested |
+| Scheduled run with launchd | ✅ Verified | ran repeatedly with exit code 0 |
+| Command-line slicing with Orca + validation | ✅ Verified | a test cube, default process profile |
+| Sending a job from Orca to a Bambu printer | 🟡 Worked once | by the author's account; the printer then showed the job running |
+| AMS recognises the converted profile | 🟡 Author reports it works | the converter keeps the id the slots already report; not independently checked |
+| Assistant modeling through a CAD MCP server | 🟡 Connected, not yet exercised | Autodesk Fusion's local MCP server connects; modeling a real part is still to do |
+| Per-part slicing overrides from the command line | ⚪ Not verified | start with recommendations and the GUI |
+| Other Bambu models (X1, A1, P1) | ⚪ Untested | same protocol family, different profiles |
+| Linux and Windows | ⚪ Untested | scripts are standard library; only the scheduler is macOS-specific |
+
+If you verify something on your hardware, please tell us: there is an issue template for exactly that.
+
+## Quick start
+
+The full version, with a checkpoint after every step, is [docs/00-quick-start](docs/00-quick-start.md). The shape of it:
+
+```bash
+git clone https://github.com/lavinialencar/3d-print-workflow.git && cd 3d-print-workflow
+
+# 1. printer: make it reachable (Bambu: LAN Only + Developer Mode; Klipper/OctoPrint: the web API)   (docs/03 or 05)
+# 2. router:  reserve the printer's IP so it never changes                                           (docs/02)
+
+# 3. private config, OUTSIDE the repository
+mkdir -p ~/.config/print-workflow && chmod 700 ~/.config/print-workflow
+cp config/ntfy.example.json ~/.config/print-workflow/ntfy.json
+cp config/bambu-printers.example.json ~/.config/print-workflow/bambu-printers.json    # Bambu; see config/ for Klipper and OctoPrint
+chmod 600 ~/.config/print-workflow/*.json
+open -e ~/.config/print-workflow/bambu-printers.json     # fill in, save with Cmd+S
+
+# 4. prove the connection, changing nothing
+python3 scripts/print_monitor.py --print-status
+
+# 5. schedule the alerts
+python3 scripts/print_monitor_launchd.py print           # look first
+python3 scripts/print_monitor_launchd.py install
+```
+
+Then set up your slicer and your notes: [docs/04](docs/04-orca-and-bambu-studio-migration.md), [docs/09](docs/09-the-conductor-skill.md),
+[`knowledge-base-template/`](knowledge-base-template/README.md).
+
+## How it fits together
+
+<p align="center"><img src="assets/architecture.svg" alt="What runs where" width="760"></p>
+
+Everything runs on your computer and talks to the printer over your local network. Only the alert leaves the house, through
+[ntfy](https://ntfy.sh). Details: [docs/01-architecture](docs/01-architecture.md).
+
+## Repository map
+
+```
+.
+├── README.md                    you are here
+├── docs/                        twelve guides, from quick start to privacy
+│   ├── 00-quick-start.md            pick your track
+│   ├── 01-architecture.md
+│   ├── 02-network-and-fixed-ip.md   any printer
+│   ├── 03-bambu-lab-track.md        LAN Only, Developer Mode, the ways around the lock-in
+│   ├── 04-orca-and-bambu-studio-migration.md   the three profile traps
+│   ├── 05-other-printers.md         Klipper, OctoPrint, adding your own
+│   ├── 06-slicing-with-an-assistant.md
+│   ├── 07-monitor-and-alerts.md
+│   ├── 08-modeling-and-delivery.md
+│   ├── 09-the-conductor-skill.md
+│   ├── 10-troubleshooting.md
+│   ├── 11-privacy-and-publishing.md
+│   └── examples/example-session.md    what a session looks like (illustrative)
+├── scripts/                     the four tools (Python standard library only)
+├── skill/print-conductor/       the thin conductor skill, as a template
+├── knowledge-base-template/     five Markdown notes to copy into your own
+├── config/                      example config files (never the real ones)
+├── tools/                       personal-data scanner and documentation link checker
+├── tests/                       unit tests, all on synthetic data
+└── assets/                      the diagrams (SVG)
+```
+
+## Principles
+
+1. **Never start a print automatically.** Sending is a click; starting is a tap on the printer's screen.
+2. **Read-only where possible.** The monitor cannot control the printer.
+3. **Secrets live outside the repository and outside synced folders.** An access code or API key is a password; on public ntfy.sh, so is the topic.
+4. **Say what was tested.** Every claim in this project has a date or a status.
+5. **The assistant explains.** A recommendation without a reason teaches nothing and hides mistakes.
+6. **Plain files over clever systems.** Markdown notes, JSON config, Python standard library.
+
+## FAQ
+
+**I have a Prusa, Creality, Elegoo or Anycubic printer.** The workflow still applies: model, check, recommend, slice with the right profile, log. For alerts you
+need an adapter for your printer's API. Writing one is a small pure function, see [Adding your own printer](docs/05-other-printers.md#adding-your-own-printer).
+
+**Does it work on an X1C, A1 or P1S?** Probably with small changes, but untested here. The status report and ports come from the same family; the profile names and
+AMS layout differ. Reports welcome.
+
+**Do I need the AI assistant?** No. The monitor, the converter and the scheduler installer are ordinary scripts and work without it. The assistant adds modeling,
+slicing recommendations and bookkeeping.
+
+**Does it cost money?** The scripts and ntfy.sh are free. The assistant needs a Claude Code account. Check the terms of your CAD tool for your use.
+
+**Is LAN Only mode safe?** It removes the cloud path, which reduces exposure, but anyone on your Wi-Fi can reach the printer. Read the security notes in
+[docs/02](docs/02-network-and-fixed-ip.md#security-notes).
+
+**Windows or Linux?** The scripts are standard-library Python. Only `print_monitor_launchd.py` is macOS-specific; use cron or Task Scheduler elsewhere. A contribution
+here would be very welcome.
+
+**Why not just use the manufacturer's app?** Apps cover the happy path. This project is for people who want their own tools in the loop, or who chose a mode (such as
+Bambu's LAN Only) that switches the app's features off.
+
+## Roadmap
+
+- [ ] Observe a real **print finished** alert and mark it verified
+- [ ] Run the Moonraker and OctoPrint adapters on real printers and promote them out of experimental
+- [ ] Ship a tested `mesh_check` and `conference_board` script (today they are described in [docs/08](docs/08-modeling-and-delivery.md))
+- [ ] A tested container recipe for running the monitor on a NAS or Raspberry Pi
+- [ ] A cron and systemd option for Linux
+- [ ] More adapters: Prusa Link, Creality, others
+- [ ] Per-part slicing overrides through a generated slicer profile
+- [ ] A compatibility table filled by users
+
+## Contributing
+
+Bug reports, compatibility reports and pull requests are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) first: it explains how to run the tests, how to state what
+you verified, and the one rule that matters most, **never commit personal data**. Report security issues privately, see [SECURITY.md](SECURITY.md).
+
+```bash
+python3 -m unittest discover -s tests -v     # no hardware needed
+python3 tools/scan_personal_data.py          # must print "clean"
+python3 tools/check_links.py                 # every doc link resolves
+```
+
+## License and credits
+
+[MIT](LICENSE). Built on the shoulders of:
+
+- [text-to-cad](https://github.com/earthtojake/text-to-cad) (MIT): the `gcode`, `bambu-labs` and `dfam-check` skills this project drives
+- [OrcaSlicer](https://github.com/OrcaSlicer/OrcaSlicer) (AGPL-3.0): the slicer. This repository does not redistribute any of its files
+- [ntfy](https://ntfy.sh): free, simple push notifications
+- [Bambu Lab's wiki](https://wiki.bambulab.com), for the documented third-party options and error codes
+
+"Bambu Lab", "P2S", "AMS", "Bambu Studio", "Klipper", "OctoPrint" and other names are trademarks of their owners. They are used here only to describe compatibility.

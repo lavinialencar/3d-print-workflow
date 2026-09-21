@@ -1,0 +1,48 @@
+name: Bug report
+description: Something does not work as documented
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting. **Before you paste any output, remove your IP, MAC, serial number, access code and ntfy topic.**
+  - type: checkboxes
+    id: redacted
+    attributes:
+      label: Privacy check
+      options:
+        - label: I removed my IP, MAC, serial number, access code and ntfy topic from everything below
+          required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened, and what did you expect?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: The exact commands, in order
+      render: shell
+    validations:
+      required: true
+  - type: textarea
+    id: output
+    attributes:
+      label: Output or log (redacted)
+      render: text
+  - type: input
+    id: printer
+    attributes:
+      label: Printer model and firmware
+      placeholder: "P2S, firmware 01.xx"
+  - type: input
+    id: os
+    attributes:
+      label: Operating system and Python version
+      placeholder: "macOS 15, Python 3.12"
+  - type: input
+    id: slicer
+    attributes:
+      label: OrcaSlicer version (if relevant)

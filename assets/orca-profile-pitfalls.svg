@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 500" width="900" height="500" role="img" aria-labelledby="t d" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif">
+  <title id="t">Why a Bambu Studio filament profile fails in OrcaSlicer, and the fix</title>
+  <desc id="d">Three pitfalls: a missing version makes Orca ignore the profile, an inherited profile loses its own filament id, and paired or nil values crash command line slicing. A script builds a standalone profile that avoids all three.</desc>
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M2 1 L8 5 L2 9" fill="none" stroke="#6b7280" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></marker>
+  </defs>
+  <rect width="900" height="500" rx="18" fill="#ffffff"/>
+  <rect x="0.5" y="0.5" width="899" height="499" rx="18" fill="none" stroke="#e5e7eb"/>
+  <text x="450" y="44" text-anchor="middle" font-size="24" font-weight="600" fill="#111827">Moving a filament profile from Bambu Studio to Orca</text>
+  <text x="450" y="68" text-anchor="middle" font-size="14" fill="#6b7280">Copying the file works on paper and fails in three quiet ways.</text>
+
+  <rect x="30" y="120" width="170" height="260" rx="14" fill="#f9fafb" stroke="#9ca3af" stroke-width="1.5"/>
+  <text x="115" y="150" text-anchor="middle" font-size="15" font-weight="600" fill="#111827">Studio 2.x</text>
+  <text x="115" y="170" text-anchor="middle" font-size="15" font-weight="600" fill="#111827">profile</text>
+  <text x="115" y="204" text-anchor="middle" font-size="12.5" fill="#6b7280">your name, vendor,</text>
+  <text x="115" y="222" text-anchor="middle" font-size="12.5" fill="#6b7280">cost, temperatures,</text>
+  <text x="115" y="240" text-anchor="middle" font-size="12.5" fill="#6b7280">your filament id</text>
+  <text x="115" y="278" text-anchor="middle" font-size="12" fill="#9ca3af">paired values</text>
+  <text x="115" y="296" text-anchor="middle" font-size="12" fill="#9ca3af">"nil" values</text>
+  <text x="115" y="314" text-anchor="middle" font-size="12" fill="#9ca3af">no Orca version</text>
+
+  <line x1="200" y1="250" x2="236" y2="250" stroke="#6b7280" stroke-width="1.6" marker-end="url(#a)"/>
+
+  <rect x="240" y="100" width="290" height="88" rx="12" fill="#FEE2E2" stroke="#B91C1C"/>
+  <text x="256" y="126" font-size="14.5" font-weight="600" fill="#7F1D1D">1  No valid "version" field</text>
+  <text x="256" y="148" font-size="12.5" fill="#991B1B">Orca skips the file with no error.</text>
+  <text x="256" y="166" font-size="12.5" fill="#991B1B">The profile just never appears.</text>
+
+  <rect x="240" y="204" width="290" height="88" rx="12" fill="#FEE2E2" stroke="#B91C1C"/>
+  <text x="256" y="230" font-size="14.5" font-weight="600" fill="#7F1D1D">2  "inherits" replaces your id</text>
+  <text x="256" y="252" font-size="12.5" fill="#991B1B">The parent's filament id wins, so the AMS</text>
+  <text x="256" y="270" font-size="12.5" fill="#991B1B">does not recognise your spool profile.</text>
+
+  <rect x="240" y="308" width="290" height="88" rx="12" fill="#FEE2E2" stroke="#B91C1C"/>
+  <text x="256" y="334" font-size="14.5" font-weight="600" fill="#7F1D1D">3  Paired and "nil" values</text>
+  <text x="256" y="356" font-size="12.5" fill="#991B1B">Command-line slicing aborts with</text>
+  <text x="256" y="374" font-size="12.5" fill="#991B1B">"Assigning from an empty vector".</text>
+
+  <line x1="530" y1="250" x2="566" y2="250" stroke="#6b7280" stroke-width="1.6" marker-end="url(#a)"/>
+
+  <rect x="570" y="120" width="300" height="260" rx="14" fill="#E1F5EE" stroke="#0F6E56" stroke-width="1.5"/>
+  <text x="720" y="150" text-anchor="middle" font-size="15" font-weight="600" fill="#085041">studio_to_orca_filament.py</text>
+  <text x="720" y="178" text-anchor="middle" font-size="12.5" fill="#0F6E56">builds a STANDALONE profile:</text>
+  <text x="590" y="212" font-size="13" fill="#085041">+  a fully resolved Orca base profile</text>
+  <text x="590" y="236" font-size="13" fill="#085041">+  only YOUR differing values on top</text>
+  <text x="590" y="260" font-size="13" fill="#085041">+  your filament id kept</text>
+  <text x="590" y="284" font-size="13" fill="#085041">+  "nil" dropped, pairs trimmed</text>
+  <text x="590" y="308" font-size="13" fill="#085041">+  a valid version stamp</text>
+  <text x="720" y="350" text-anchor="middle" font-size="14" font-weight="600" fill="#0F6E56">Shows up, matches the AMS, slices</text>
+
+  <text x="450" y="440" text-anchor="middle" font-size="13.5" fill="#374151">Quit Orca (Cmd+Q) before copying the result into its user folder, then reopen it.</text>
+  <text x="450" y="462" text-anchor="middle" font-size="12.5" fill="#6b7280">Full explanation: docs/04-orca-and-bambu-studio-migration.md</text>
+</svg>

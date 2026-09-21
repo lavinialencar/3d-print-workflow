@@ -1,0 +1,6 @@
+{
+  "backend": "moonraker",
+  "host": "192.0.2.20",
+  "port": 7125,
+  "api_key": ""
+}
