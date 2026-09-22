@@ -6,6 +6,7 @@ All notable changes are recorded here. Format based on [Keep a Changelog](https:
 ## [Unreleased]
 
 ### Added
+- `scripts/fix_bambu_machine_profile.py`: patches a Bambu machine profile with the keys it silently inherits but that OrcaSlicer's `--load-settings` does not resolve (about 30 for a P2S, including the real bed size), confirmed by comparing a GUI-exported G-code against a command-line slice of the same part. 11 tests on a fake profile tree.
 - `scripts/analyze_part.py`: measures a model (slopes, flat tops, round walls, overhangs, bridges, wall thickness, six orientations) and turns it into questions for the owner, global and per-object settings, and three scenarios to slice and compare. Reads STL and 3MF plates. Needs numpy.
 - `scripts/find_models.py`: before modeling, searches Printables and Thingiverse (official API, your own token, sent in a header) for an existing model and prints one shortlist with likes, makes (people who printed it), licence or derivatives permission, and link. Read-only, no downloads; hides adult and private things and drops loose hits. 18 tests with a fake network.
 - `docs/12-slicing-by-part.md`: the method, with a source or an honest "heuristic" label on every rule, and a catalogue of ten kinds of part (curved, round walls, thin, thick, overhang, bridge, tall and thin, wide and flat, flat top, fits) built from public and community sources, with the disagreements between them written down.
@@ -13,7 +14,7 @@ All notable changes are recorded here. Format based on [Keep a Changelog](https:
 - 33 tests for the analyzer, built on shapes with known answers (cube, sphere, cylinder, T bracket, thin fin, thick block, wide plate). They also check that every rule has a source and a trust level, that unverified rules are never applied, and that every setting written exists in OrcaSlicer.
 
 ### Changed
-- docs/06 now records the likely upstream cause of the command-line versus GUI difference (OrcaSlicer pull request 15438, merged after v2.4.2) and says it is untested here.
+- docs/06: the command-line versus GUI difference is now resolved, not just suspected. A real cube, sliced both ways and compared, confirmed the root cause (the CLI does not walk a machine profile's `inherits` chain) and proved the fix (`fix_bambu_machine_profile.py`): after patching, every setting that shapes the print matched the GUI exactly.
 
 ## [0.1.0] - 2026-09-20
 

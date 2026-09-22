@@ -168,8 +168,9 @@ Fast        0.24 Standard     83      ?        ?
 
 Then the owner answers the one question that only they can: "how much time do I have, and how smooth do I want it?".
 
-> **Read [06](06-slicing-with-an-assistant.md#pitfall-the-command-line-does-not-resolve-profile-inheritance-like-the-gui) first.** Comparing scenarios is
-> only meaningful if the command-line slice matches what the GUI would produce. Verify that once with `gcode_settings_diff.py`.
+> **Read [06](06-slicing-with-an-assistant.md#pitfall-the-command-line-does-not-resolve-profile-inheritance-like-the-gui-and-the-fix-that-closes-it) first.**
+> Comparing scenarios is only meaningful if the command-line slice matches what the GUI would produce; `fix_bambu_machine_profile.py` closes the gap
+> for a Bambu printer. Verify it once with `gcode_settings_diff.py`.
 
 ## What this does not do
 

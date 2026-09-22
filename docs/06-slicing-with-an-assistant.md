@@ -91,21 +91,45 @@ Bambu-specific commands the validator does not know; it leaves them alone, and t
 
 Validation is **static**. It does not prove the print will succeed. Look at the first layer.
 
-## Pitfall: the command line does not resolve profile inheritance like the GUI
+## Pitfall: the command line does not resolve profile inheritance like the GUI, and the fix that closes it
 
-This one is easy to miss and it matters for quality. Slicing the **same part** from the command line, three ways, produced G-code whose settings differ
-in dozens of keys nobody asked to change:
+This one is easy to miss and it matters for quality. Slicing the **same part** from the command line different ways produced G-code whose settings
+differed in dozens of keys nobody asked to change, including the machine's own bed size.
 
-| How the profile was given | What happened |
-|---|---|
-| The system profile file **as-is** | Slices, but the file only holds the values it overrides; everything else falls back to the slicer's built-in defaults. Not what the GUI shows |
-| A **fully merged** copy (parents resolved into one file) | Closer to the GUI, but 40 keys differed from the as-is run: line widths, wall generator (Arachne or classic), support type, skirt |
-| A **child** profile that `inherits` the system one | Your overrides apply, but the parent's speeds and accelerations came back at the slicer's slow defaults: 27 keys differed |
+**Root cause, confirmed on 2026-09-22.** A 20 mm test cube was sliced in the GUI (Bambu Lab P2S, `0.20mm Standard @BBL P2S`, a standalone filament
+profile) and the G-code exported, then sliced from the command line with the same three profiles via `--load-settings`. The two G-codes disagreed on
+175 of 630 compared settings. The most telling one: `printable_area` came back as the generic `200x200` instead of the P2S's real `256x256`. The
+machine profile inherits about 30 keys, including its own bed size, wall generator default, pause G-code and cooling defaults, from a common base file
+(`fdm_bbl_3dp_001_common` for Bambu machines). OrcaSlicer's `--load-settings` reads the exact file you give it and does **not** walk that `inherits`
+chain, so every one of those 30 keys silently falls back to the slicer's built-in schema default instead of the machine's real value. This is the same
+class of bug OrcaSlicer's own pull request [#15438](https://github.com/OrcaSlicer/OrcaSlicer/pull/15438), merged 2026-09-08, targets; the installed
+version at the time of this test, v2.4.2 (2026-07-07), predates it.
 
-The mechanics of per-part settings **do work**: a child or merged profile setting 4 walls, 25% infill and a 5 mm brim produced exactly that in the G-code, with no GUI
-involved. What is *not* guaranteed is that everything **else** matches what you would get by pressing "Slice" in the app.
+**The fix that worked:** `scripts/fix_bambu_machine_profile.py` reads a machine profile, walks its `inherits` chain, and writes a copy of the *original*
+file with only the missing keys filled in from its ancestors — nothing you already set is touched or overridden.
 
-**So verify it once, with a reference.** `scripts/gcode_settings_diff.py` compares the settings the slicer records inside two G-code files:
+```bash
+python3 scripts/fix_bambu_machine_profile.py "Bambu Lab P2S 0.4 nozzle" --out patched-machine.json
+OrcaSlicer --load-settings "patched-machine.json;<process>.json" --load-filaments <filament>.json --slice 0 --outputdir out part.stl
+```
+
+A **full flatten** of the whole profile tree (every key from every ancestor, not just the missing ones) was tried first and made the CLI reject the
+file outright, for a reason not yet understood — patching only what is missing is the version proven to work. The process profile's own (much shorter)
+inheritance chain does need a full flatten, though, since a *child* process profile losing its parent's speeds and accelerations was a real, separately
+observed failure mode; `--load-settings` on a bare child file gives you your overrides with everything else at the slicer's slow defaults.
+
+**After the fix, verified with the same cube:** the disagreement dropped from 175 to 76 of 630 settings, and **none of the 76 remaining ones shape the
+print** — wall count, layer height, infill, shells, supports, seam and every speed already matched exactly. What was left was host/connectivity
+metadata (`printhost_*`, `thumbnails_format`), bookkeeping for a second AMS filament slot loaded with the identical filament (which the GUI's saved
+project recognises as "no purge needed" in a way a fresh command-line invocation does not always reach the same conclusion on), and the physical build
+plate type (`curr_bed_type`), which lives only in the GUI's project state and has to be set explicitly if it is not the default "Cool Plate":
+
+```json
+{ "curr_bed_type": "Supertack Plate" }
+```
+
+**So verify this on your printer too, with a reference.** `scripts/gcode_settings_diff.py` compares the settings the slicer records inside two G-code
+files:
 
 ```bash
 # 1. In the GUI, slice a part with your profile and export the G-code            -> gui.gcode
@@ -113,10 +137,10 @@ involved. What is *not* guaranteed is that everything **else** matches what you 
 python3 scripts/gcode_settings_diff.py gui.gcode cli.gcode
 ```
 
-**Likely cause, fixed upstream.** OrcaSlicer's own pull request [#15438](https://github.com/OrcaSlicer/OrcaSlicer/pull/15438), "resolve inherited presets through vendor manifests", was merged on 2026-09-08. It fixes sparse profiles silently falling back to schema defaults in `--load-settings` and `--load-filaments`. The latest stable release at the time of writing, v2.4.2 (2026-07-07), predates it. Whether a build with the fix closes the whole gap has **not** been tested here, so keep verifying with the diff below.
-
-An empty list (or only what you changed on purpose) means the command-line profile is equivalent to the GUI. A long list means it is not, and the printout tells
-you which values to fix. Do this before you trust any "automatic best quality" claim, including this project's.
+An empty list, or only settings you changed on purpose or that are known-cosmetic (see above), means the command-line profile is equivalent to the GUI
+for that machine. Do this once per printer before trusting an "automatic best quality" claim, including this project's: the 30 missing keys are specific
+to how Bambu structures its profile inheritance, and a different vendor's common-base file will name different keys, even though the underlying bug
+(the CLI not walking `inherits`) is the same.
 
 Before recommending, let the shape speak: [12 Slicing by part](12-slicing-by-part.md) measures the model and turns it into questions and settings.
 
