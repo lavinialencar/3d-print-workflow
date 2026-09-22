@@ -5,8 +5,12 @@ All notable changes are recorded here. Format based on [Keep a Changelog](https:
 
 ## [Unreleased]
 
+### Added
+- `scripts/package_gcode_as_3mf.py`: wraps a plain `.gcode` into a real Bambu `.gcode.3mf` by swapping only the template's `Metadata/plate_N.gcode` (and its `.md5`), leaving `Metadata/slice_info.config` untouched. Exists because a Bambu printer ignores AMS mapping entirely for a bare `.gcode` file, confirmed on the official Bambu Lab forum: AMS mapping lives in that config file, which only exists inside a `.3mf`. 11 tests; verified byte-for-byte on a real template and a real command-line-sliced G-code, not yet print-proven through this exact script end to end.
+
 ### Changed
 - README: added an "active development, not a finished release" callout next to the existing unofficial-project notice, telling a new user to start on a small, low-stakes part and scale up gradually rather than trusting the template with a long print right away.
+- README: the command-line slicing row now records that the tilted, tree-supported test cube was physically printed, not just settings-compared — a first print failed (support detached mid-print, caught by the printer's spaghetti-detection camera) because the default support interface is tuned for easy removal rather than for a small, steeply overhung contact area; tightening the top interface fixed it. Added rows for sending a plain G-code straight to a printer (works, but can't select an AMS slot) and for `package_gcode_as_3mf.py`.
 
 ## [0.2.1] - 2026-09-22
 

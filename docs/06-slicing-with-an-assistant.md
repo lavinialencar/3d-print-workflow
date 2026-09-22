@@ -171,6 +171,46 @@ nothing at all) unless you go looking in `~/Library/Logs/DiagnosticReports/OrcaS
 
 Before recommending, let the shape speak: [12 Slicing by part](12-slicing-by-part.md) measures the model and turns it into questions and settings.
 
+## Settings matching is not enough: the tilted, tree-supported cube was physically printed too
+
+Everything above proves the CLI and GUI produce the same *settings*. That is necessary but not sufficient — a real
+print can still fail for reasons no settings diff catches. So the same tilted, tree-supported cube from above was
+actually printed on a Bambu Lab P2S, not just sliced and compared.
+
+**First attempt failed**, and the printer's own camera caught it: `HMS_0C00-0300-0003-0008`, "possible spaghetti
+defect", paused the print partway through. The object had detached from its tree support mid-print. Cause: OrcaSlicer's
+default support interface (`support_top_z_distance: 0.2mm`, `support_interface_spacing: 0.5mm`) is tuned to balance
+holding the part up against being easy to snap off afterward — a reasonable default for an ordinary part, but too
+weak for a small, steeply overhung contact area like a cube balanced on one edge with most of its mass in the air.
+
+**Fix: tighten only the top interface** — `support_top_z_distance` to `0` and `support_interface_spacing` to `0.1mm`
+— without changing anything else. Reprinted from scratch: finished at 100%, 140/140 layers, no failure, and the
+part came out clean (some surface marking exactly where the support touched, which is normal and expected for any
+FDM support contact, not a defect of this fix).
+
+**A second, structural limit turned up along the way: a bare `.gcode` file cannot use AMS at all.** Sending a plain
+`.gcode` straight to the printer over the network (FTPS upload + the `gcode_file` MQTT command — see
+`scripts/bambu_lan_print.py` in the `bambu-labs` skill) uploads and starts the print fine, but the printer always
+pulls from the external spool holder, never the AMS, no matter what you select on the touchscreen or load into the
+AMS itself. This is not a bug to route around in the UI: AMS mapping lives in `Metadata/slice_info.config`, a file
+that only exists inside a `.3mf` archive, and a bare `.gcode` has no such sidecar for the printer to read. Confirmed
+independently on the [Bambu Lab community forum](https://forum.bambulab.com/t/using-ams-when-exporting-and-printing-gcode-files-not-3mf/61668).
+
+**The fix: `scripts/package_gcode_as_3mf.py`.** Export a real, already-sliced project from the GUI once (File > Export >
+"Export sliced file...") as a template, then swap its `Metadata/plate_N.gcode` for your command-line-produced G-code:
+
+```bash
+python3 scripts/package_gcode_as_3mf.py --template project.gcode.3mf --gcode part.gcode --out part.gcode.3mf
+```
+
+Everything else in the template, crucially `Metadata/slice_info.config`, is carried over untouched, so the packaged
+file opens and sends with working AMS mapping exactly like the template did. The one requirement: the G-code has to
+be sliced with a filament profile compatible with what the template declares (same `tray_info_idx`), which in
+practice just means using the same filament profile you always do. Verified byte-for-byte (11 tests, and a real
+template swapped with a real command-line G-code); not yet re-verified with a live print through this exact script —
+the equivalent hand-built swap was proven live the same day, but treat the script itself as mechanically proven,
+not yet print-proven end to end.
+
 ## The recommendation, in practice
 
 Before slicing, the assistant reads your `printer-profile.md` and looks at the part: its size, its base, its
