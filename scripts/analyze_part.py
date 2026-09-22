@@ -83,7 +83,13 @@ def read_3mf(path):
         objects = {}
         build = []
         for name in names:
-            root = ET.fromstring(z.read(name))
+            data = z.read(name)
+            if b"<!DOCTYPE" in data:
+                # .model de 3MF nunca tem DOCTYPE/DTD; um 3MF baixado de terceiro (Printables,
+                # Thingiverse) com isso e suspeito de "billion laughs" (entidade recursiva
+                # esgotando memoria). xml.etree nao tem protecao embutida, entao recusamos aqui.
+                raise ValueError(f"{name}: DOCTYPE inesperado em .model de 3MF, arquivo recusado por seguranca")
+            root = ET.fromstring(data)
             ns = {"m": root.tag.split("}")[0].strip("{")}
             for obj in root.iterfind(".//m:resources/m:object", ns):
                 key = (name, obj.get("id"))
