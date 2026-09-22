@@ -386,6 +386,11 @@ SRC = {
     "yt-katzby-mini": "https://www.youtube.com/watch?v=ic1j4-f8kLc",
     "yt-layerlogic-support": "https://www.youtube.com/watch?v=g-nnZy2MYvI",
     "yt-arachne-test": "https://www.youtube.com/watch?v=RBaAAEdUqLs",
+    "reel-support-snug": "https://www.instagram.com/reel/DcvEzKRtXWb/",
+    "reel-support-gap": "https://www.instagram.com/reel/DdEdzU8Pqqf/",
+    "reel-counterbore": "https://www.instagram.com/reel/DcEV8dcP39I/",
+    "reel-petg-interface": "https://www.instagram.com/reel/Db0szePPxA8/",
+    "reel-ironing-60": "https://www.instagram.com/reel/DbRAkC2RkH8/",
     "project": "this project",
 }
 
@@ -578,7 +583,11 @@ def recommend(features, finish, purpose, backlit, nozzle=NOZZLE, uses=()):
              "Tree supports for organic and curved parts: less material, easier to remove, fewer marks.", "stacksheriff")
         rule("overhang", "support_interface_top_layers", 2, "Two interface layers give a clean underside; three is rougher and more than three is hard to remove.", "stacksheriff")
         rule("overhang", None, None, "Top Z distance: 0.2 mm at 0.2 mm layers (0.15 to 0.25). The Prusa guide says 50 to 75% of the layer height. The profile default is kept.", "prusa-support", "disputed", apply=False)
-        rule("overhang", None, None, "XY support distance around 0.35 mm: too small scars the part, too large leaves a thin support with nothing to lean against. Interface spacing: a small non-zero value so it comes off as one sheet, not 0.", "yt-layerlogic-support", "sourced", apply=False)
+        rule("overhang", None, None, "XY support distance around 0.35 mm: too small scars the part, too large leaves a thin support with nothing to lean against. Interface spacing: a small non-zero value so it comes off as one sheet, not 0. Confirmed by a second, independent source (an Instagram creator using the same 0.35 default) after a YouTube test found the same number.", "yt-layerlogic-support", "sourced", apply=False)
+        rule("overhang", None, None, "support_object_first_layer_gap (the base gap under the support, default 0.2 mm) is a separate lever from the top Z distance: raising it eases removal without scarring the underside of the part.", "reel-support-gap", "sourced", apply=False)
+        rule("overhang", "support_style", "snug", "Snug support, paired with 3 top interface layers, on a large flat overhang: an alternative to normal/tree worth trying when those leave too much material or scar the surface.", "reel-support-snug", "disputed")
+        rule("overhang", None, None, "A vertical unsupported hole (a counterbore) can skip supports entirely with counterbore_hole_bridging on: Orca bridges over it instead. Worth trying before adding a support for that one hole.", "reel-counterbore", "sourced", apply=False)
+        rule("overhang", None, None, "Support interface in a different material than the part (PETG interface under a PLA part) uses the two materials' low mutual adhesion on purpose, so the support snaps off cleanly. The reverse pairing (PETG part, PLA interface) is already noted for the figurine case.", "reel-petg-interface", "unverified", apply=False)
         rule("overhang", None, None, "Support threshold angle: one source says leave it at 0 (auto-detect) instead of starting at 45, and describes it as measured from horizontal where a smaller number gives MORE support, which runs opposite to the rest of this catalogue. Left unresolved, on top of the existing dispute over which angle is even meant.", "yt-layerlogic-support", "disputed", apply=False)
         rule("overhang", None, None, "A cleaner alternative to supports: turn the part, chamfer the overhang to 45 degrees, or split it and glue.", "orca-support", "sourced", apply=False)
         questions.append("Is a support scar on the overhanging face acceptable, or is that face visible?")
@@ -614,7 +623,7 @@ def recommend(features, finish, purpose, backlit, nozzle=NOZZLE, uses=()):
     if "text" in uses:
         rule("text", None, None, "Raised text on a 0.4 mm nozzle: strokes 1.0 mm wide at least (1.5 better), 0.5 mm high at least (0.8 better), letters 4 mm tall at least (6 better). Engraved: 0.5 mm wide (0.8 better) and 0.3 mm deep (0.5 better). Bold sans-serif capitals. A blog reports 0.4 to 0.6 mm strokes as the absolute floor.", "mandarin3d", "disputed", apply=False)
         rule("text", "ironing_type", "topmost", "Iron the top of raised text and plaques.", "printago-ironing")
-        rule("text", None, None, "The best ironing speed and flow differ by filament and printer (15 mm/s and 20% in one video, 50 mm/s and 30% in another, and the default was worse than none in the second): print a speed by flow test plate once per filament.", "yt-ironing-navy", "disputed", apply=False)
+        rule("text", None, None, "The best ironing speed and flow differ by filament and printer (15 mm/s and 20% in one video, 50 mm/s and 30% in another, 60 mm/s and 20% in a saved reel, and the default was worse than none in one video): print a speed by flow test plate once per filament.", "yt-ironing-navy", "disputed", apply=False)
         rule("text", "ironing_flow", "10%", "Low flow (8 to 18% reported), 0.1 mm line spacing, 15 to 30 mm/s. The Orca wiki lists the settings but gives no defaults.", "printago-ironing")
         rule("text", "ironing_spacing", 0.1, "0.1 mm line spacing.", "printago-ironing")
         rule("text", "ironing_speed", 20, "15 to 30 mm/s.", "printago-ironing")
