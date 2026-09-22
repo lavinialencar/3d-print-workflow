@@ -379,6 +379,12 @@ SRC = {
     "yt-ironing-grid": "https://www.youtube.com/watch?v=b0tqtJJ8Lf0",
     "yt-ironing-navy": "https://www.youtube.com/watch?v=vowkUstjZlE",
     "yt-p2s-review": "https://www.youtube.com/watch?v=ik9yv4BVGlg",
+    "yt-joe-pip": "https://www.youtube.com/watch?v=4tdPTT3zgH8",
+    "yt-cnc-inserts2": "https://www.youtube.com/watch?v=B5g7R53hcH4",
+    "yt-modbot-bridge": "https://www.youtube.com/watch?v=XvUIzDZm8ec",
+    "yt-modbot-wallorder": "https://www.youtube.com/watch?v=BxJdSkawGlQ",
+    "yt-katzby-mini": "https://www.youtube.com/watch?v=ic1j4-f8kLc",
+    "yt-layerlogic-support": "https://www.youtube.com/watch?v=g-nnZy2MYvI",
     "project": "this project",
 }
 
@@ -484,6 +490,10 @@ def recommend(features, finish, purpose, backlit, nozzle=NOZZLE, uses=()):
         if u in uses and not (finish == "fast" and u in ("figurine", "lithophane")):
             layer = value
             reasons.append(f"use={u} -> {value} mm layers: {USES[u][1]}")
+    if "figurine" not in uses and "small" in kinds and max(size) <= 60 and purpose != "load" and finish != "fast":
+        layer = 0.12
+        rule("figurine", None, None, "One tester found 0.12 mm cut print time by nearly half against 0.08 mm with almost no visible difference on a miniature, and doubling the outer/inner wall speed of the 0.08 preset changed nothing visible either: 0.12 is the more efficient default for a small part, not just the smooth-finish middle ground.", "yt-katzby-mini", "disputed", apply=False)
+        reasons.append("small part (largest side under 60 mm) -> 0.12 mm layers is as good as 0.08 in one test, and faster")
     layer = snap_layer(layer)
     preset = PRESETS[layer]
     if layer == 0.16:
@@ -545,6 +555,7 @@ def recommend(features, finish, purpose, backlit, nozzle=NOZZLE, uses=()):
 
     # ---- seam on round walls
     if "round_walls" in kinds:
+        rule("round_walls", None, None, "The wiki calls inner/outer/inner the best surface finish, and Orca's own help text says precise_outer_wall is ignored in that order: a real test on one printer found inner/outer/inner tied outer/inner on outer-wall finish and won on dimensional tolerance (a 0.2 mm test column only came out right in that order), while outer/inner had the worst seam. inner/outer/inner needs 3 walls or more, or it falls back to outer/inner. One tester, one filament, but the first measured data point in this debate.", "yt-modbot-wallorder", "disputed", apply=False)
         if purpose == "load":
             rule("round_walls", "seam_position", "random", "A load-bearing round part: random spreads the weak point along the wall.", "orca-seam")
         else:
@@ -563,6 +574,8 @@ def recommend(features, finish, purpose, backlit, nozzle=NOZZLE, uses=()):
              "Tree supports for organic and curved parts: less material, easier to remove, fewer marks.", "stacksheriff")
         rule("overhang", "support_interface_top_layers", 2, "Two interface layers give a clean underside; three is rougher and more than three is hard to remove.", "stacksheriff")
         rule("overhang", None, None, "Top Z distance: 0.2 mm at 0.2 mm layers (0.15 to 0.25). The Prusa guide says 50 to 75% of the layer height. The profile default is kept.", "prusa-support", "disputed", apply=False)
+        rule("overhang", None, None, "XY support distance around 0.35 mm: too small scars the part, too large leaves a thin support with nothing to lean against. Interface spacing: a small non-zero value so it comes off as one sheet, not 0.", "yt-layerlogic-support", "sourced", apply=False)
+        rule("overhang", None, None, "Support threshold angle: one source says leave it at 0 (auto-detect) instead of starting at 45, and describes it as measured from horizontal where a smaller number gives MORE support, which runs opposite to the rest of this catalogue. Left unresolved, on top of the existing dispute over which angle is even meant.", "yt-layerlogic-support", "disputed", apply=False)
         rule("overhang", None, None, "A cleaner alternative to supports: turn the part, chamfer the overhang to 45 degrees, or split it and glue.", "orca-support", "sourced", apply=False)
         questions.append("Is a support scar on the overhanging face acceptable, or is that face visible?")
         if "curved" in kinds:
@@ -574,8 +587,9 @@ def recommend(features, finish, purpose, backlit, nozzle=NOZZLE, uses=()):
     if "bridge" in kinds:
         if cur["longest_bridge_mm"] > BRIDGE_WARN_MM:
             rule("bridge", None, None, f"A bridge of about {cur['longest_bridge_mm']} mm is longer than the {BRIDGE_WARN_MM:.0f} mm that sags whatever you set: split it with a support island or reorient.", "bambu-bridge", apply=False)
+            rule("bridge", None, None, "Disputed on long spans: one wiki page recommends thick bridges for a stronger long bridge, but a 10 to 100 mm test found thick bridges sag WORSE on long spans (the bridge line narrows to the nozzle width, so more lines fit, but that did not help here); the gains in that test were on short ABS/ASA bridges with low fan. Left off by default until this is settled for PLA.", "yt-modbot-bridge", "disputed", apply=False)
         else:
-            rule("bridge", "thick_bridges", 1, "Thick bridges are stronger on longer spans, at the cost of a rougher underside.", "orca-bridging")
+            rule("bridge", "thick_bridges", 1, "Thick bridges are stronger on longer spans, at the cost of a rougher underside. One test found this reversed on long spans in ABS/ASA (see the note above): keep this only for short bridges until PLA is checked.", "orca-bridging", "disputed")
 
     # ---- tall and thin, wide and flat: adhesion
     if "tall_thin" in kinds:
@@ -612,6 +626,8 @@ def recommend(features, finish, purpose, backlit, nozzle=NOZZLE, uses=()):
         questions.append("How many colour changes, and which colours? Light-to-light and dark-to-dark orders purge less than light-to-dark.")
     if "flexi" in uses:
         rule("flexi", None, None, "Modelled clearance of 0.25 mm per side is the start (0.20 to 0.30 for PLA): under 0.15 welds shut. Bambu forum users report 0.1 to 0.2 working with tuned flow; other guides say 0.3 to 0.5 for hinges and chains. Print a tolerance test in 0.1 mm steps first.", "qidi-dragon", "disputed", apply=False)
+        rule("flexi", None, None, "The clearance depends on the kind of contact: a shaft turning inside a hole measured 0.6 mm on the diameter (0.3 per side) in one test, twice what a flat face against a flat face needed (0.3 mm total). Design the two differently instead of using one number for both.", "yt-joe-pip", "sourced", apply=False)
+        rule("flexi", None, None, "Never boolean-union the moving parts in CAD: section the model and check for contact before slicing.", "yt-joe-pip", "sourced", apply=False)
         rule("flexi", "enable_support", 0, "Supports jam joints.", "qidi-dragon")
         rule("flexi", "wall_loops", 3, "Three walls, Arachne, pins upright.", "sovol-pip")
         rule("flexi", "elefant_foot_compensation", 0.2, "The first layer squashes out and fuses the base; reported values run from 0.1 to 0.3 mm. Also model a 0.5 mm 45-degree chamfer on the bottom edges of mating parts.", "sovol-pip", "disputed")
@@ -623,6 +639,8 @@ def recommend(features, finish, purpose, backlit, nozzle=NOZZLE, uses=()):
         rule("flexi", None, None, "Fan at 100% after layer 2 or 3, and let the part cool before flexing each joint through its full range, tail to head, without heat. The slicer's gap closing radius is 0.049 mm in this profile, far below half of a 0.2 mm gap, so it will not close it (read from the settings block; the reasoning is this project's).", "qidi-dragon", apply=False)
     if "fit" in uses:
         rule("fit", None, None, "Snap hook against catch: 0.10 to 0.20 mm on the latching face; a PLA hook at least 1.2 mm thick with a length to thickness ratio of 2:1 at least, 3:1 ideal; a lid on a box 0.20 to 0.25 mm per side.", "qidi-fits", apply=False)
+        rule("fit", None, None, "Measured: a printed hole comes out about 0.25 mm smaller than modelled (drill-bit test). For an M3 heat-set insert, 4.2 mm as printed pulled out at about 90% of the maximum load (about 1400 N); a drilled 4.2 mm hole was almost hand-loose. One iron temperature used was about 240 C, hotter than the 225 C figure already here.", "yt-cnc-inserts2", "sourced", apply=False)
+        rule("fit", None, None, "Splitting the compensation both ways can beat a single-sided fix: +0.10 mm on the hole and -0.05 mm on the outer contour, rather than 0.10 mm on only one side. Printing a gauge with several offsets and reading off the one that fits is the reliable method; no single number transfers between printers.", "https://www.youtube.com/watch?v=qI1zlB45wO4", "unverified", apply=False)
         rule("fit", None, None, "Press fit: interference of 0.05 to 0.15 mm (one guide); another summary says clearance instead. Calibrate the X-Y hole compensation with Orca's tolerance test: values of +0.1 to +0.2 mm are quoted, and printed holes come out about 0.25 mm small.", "qidi-fits", "disputed", apply=False)
         rule("fit", None, None, "M3 heat-set insert: hole 4.2 mm as printed (4.0 if drilled), depth the insert length plus 0.5 to 1.5 mm, wall about 2 mm around it, boss 1.5 to 2 times the insert diameter, 4 to 6 walls.", "cnc-inserts", apply=False)
         rule("fit", "wall_loops", max(walls, 4), "Screw bosses want 4 to 6 walls.", "sovol-pip", "heuristic")
@@ -645,6 +663,7 @@ def recommend(features, finish, purpose, backlit, nozzle=NOZZLE, uses=()):
         rule("figurine", "support_style", "organic", "Organic tree style for figures; Bambu forum users suggest Hybrid instead.", "stacksheriff", "disputed")
         rule("figurine", "enable_support", 1, "Figures with limbs or weapons almost always need supports.", "3dsourced-minis")
         rule("figurine", "support_interface_top_layers", 2, "Two interface layers on detailed faces (three is rougher).", "stacksheriff")
+        rule("figurine", None, None, "For tree supports on a miniature, one tester used a top Z distance of 0.16 to 0.20 mm, an XY distance of 0.5 mm or more, a support brim (initial layer expansion) of 5 to 10 mm, and a grid interface pattern.", "yt-katzby-mini", "sourced", apply=False)
         rule("figurine", None, None, "Tilt the model 45 degrees on X in Orca's gizmo when limbs stick out at 90 degrees: fewer and simpler supports. Or print upright so supports touch only the least visible underside.", "3dsourced-minis", apply=False)
         rule("figurine", None, None, "Layer height 0.12 to 0.16 for detail, 0.08 for showcase pieces; use variable layer height, thinner on face and hands.", "bambu-figures", apply=False)
         rule("figurine", None, None, "Support angle: 45 degrees (one guide) against 55 to 60 (another); they define the angle differently, so check the definition before using either.", "stacksheriff", "disputed", apply=False)

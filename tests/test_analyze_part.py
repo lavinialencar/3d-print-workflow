@@ -293,6 +293,14 @@ class AnalyzeTests(unittest.TestCase):
         self.assertEqual(ap.main(["--machine"]), 0)
         self.assertTrue(all(src.startswith("http") and status in {"sourced", "disputed", "unverified"} for _, src, status in ap.MACHINE))
 
+    def test_a_small_part_gets_012_instead_of_008_by_default(self):
+        f = ap.analyze("mini", box(0, 0, 0, 20, 20, 20))
+        self.assertIn("small", ap.archetypes(f))
+        rec = ap.recommend(f, "smooth", "decorative", False)
+        self.assertEqual(rec["layer_height"], 0.12)
+        fast = ap.recommend(f, "fast", "decorative", False)
+        self.assertEqual(fast["layer_height"], 0.24)
+
     def test_inside_out_mesh_gives_the_same_answer(self):
         good = ap.analyze("t", t_shape())
         flipped = ap.analyze("t", t_shape()[:, [0, 2, 1]])
