@@ -14,7 +14,7 @@ All notable changes are recorded here. Format based on [Keep a Changelog](https:
 - 33 tests for the analyzer, built on shapes with known answers (cube, sphere, cylinder, T bracket, thin fin, thick block, wide plate). They also check that every rule has a source and a trust level, that unverified rules are never applied, and that every setting written exists in OrcaSlicer.
 
 ### Changed
-- docs/06: the command-line versus GUI difference is now resolved, not just suspected. A real cube, sliced both ways and compared, confirmed the root cause (the CLI does not walk a machine profile's `inherits` chain) and proved the fix (`fix_bambu_machine_profile.py`): after patching, every setting that shapes the print matched the GUI exactly.
+- docs/06: the command-line versus GUI difference is now resolved, not just suspected. A real cube, sliced both ways and compared, confirmed the root cause (the CLI does not walk a machine profile's `inherits` chain) and proved the fix (`fix_bambu_machine_profile.py`): after patching, every setting that shapes the print matched the GUI exactly. Re-confirmed on a 45°-tilted cube with tree supports on: same 76-setting gap, same non-quality categories, every support-related setting matched. Documented two new CLI-only crashes found along the way: `--rotate`/`--rotate-x`/`--rotate-y` segfault (`Plater::build_volume()` on a null GUI singleton, via the auto-arrange path) and a brim near the bed edge on tilted+supported geometry can crash `Print::process` (`make_brim`/`outer_inner_brim_area`), non-deterministically. Neither reproduces in the GUI; both have documented workarounds.
 
 ## [0.1.0] - 2026-09-20
 

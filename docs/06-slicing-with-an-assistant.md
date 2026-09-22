@@ -142,6 +142,33 @@ for that machine. Do this once per printer before trusting an "automatic best qu
 to how Bambu structures its profile inheritance, and a different vendor's common-base file will name different keys, even though the underlying bug
 (the CLI not walking `inherits`) is the same.
 
+**Confirmed again on more demanding geometry, 2026-09-22.** The cube above has flat faces and no overhang, the easy case. The same recipe was re-run on
+the same cube tilted 45° with tree supports turned on, to see whether support-specific settings hold up too. Result: 76 of 632 compared settings still
+differ, the exact same count and the exact same categories as the flat case (AMS second-slot bookkeeping, host/connectivity metadata) — every
+support-related key (`support_type`, `support_style`, `enable_support`, `support_threshold_angle`, `support_interface_top_layers`,
+`support_object_xy_distance`, `tree_support_brim_width`, ...) matched exactly. The fix generalises past a flat cube.
+
+Two new, unrelated CLI-only crashes turned up while producing that geometry, both worth knowing before you rely on the command line for anything but a
+flat, centred, brim-less test part:
+
+1. **`--rotate` / `--rotate-x` / `--rotate-y` reliably segfault the CLI.** Any of these flags on a Bambu profile crashes with `SIGSEGV` inside
+   `Slic3r::GUI::Plater::build_volume()`, called from the plate auto-arrange path (`PartPlateList::rebuild_plates_after_arrangement` →
+   `add_instance` → `check_outside`) — GUI-only code that has no live `Plater` instance in a headless CLI run, so it dereferences a null pointer.
+   `--scale` was not tested but treat it as suspect for the same reason. **Workaround: never rotate or scale through the CLI flags.** Bake the
+   transform into the mesh yourself (rotate the STL's vertices in a small script, or export the already-transformed geometry from the GUI) and slice
+   that file with no `--rotate*`/`--scale` flags at all.
+2. **A brim on a tilted object near the bed edge, with tree supports on, crashes `Print::process` itself.** With `brim_type` at the GUI's own real
+   value (`auto_brim`, or `outer_only`), slicing this same tilted+supported cube from the CLI crashed inside `Slic3r::make_brim` →
+   `outer_inner_brim_area`, either as a `SIGSEGV` or as an uncaught `std::vector` exception depending on the run — non-deterministic, consistent with
+   memory corruption from a degenerate polygon rather than a clean rejection. Isolated the actual trigger by bisecting on two things: `brim_type:
+   no_brim` never crashes regardless of position, and moving the same object to the middle of the plate (still tilted, still supported, still
+   `auto_brim`) never crashes either. So the crash needs all three: brim generation, tree support, and the part sitting close (tens of mm) to the
+   printable-area boundary. **Workaround: keep parts well clear of the bed edge when slicing supported, tilted geometry from the CLI**, or set
+   `brim_type` to `no_brim` as a quick diagnostic if a CLI slice ever dies with no useful error message.
+
+Neither crash happened in the GUI for the same part and settings — both are CLI-only, and both are silent or near-silent (`run found error, exit`, or
+nothing at all) unless you go looking in `~/Library/Logs/DiagnosticReports/OrcaSlicer-*.ips` for the actual signal and stack trace.
+
 Before recommending, let the shape speak: [12 Slicing by part](12-slicing-by-part.md) measures the model and turns it into questions and settings.
 
 ## The recommendation, in practice
