@@ -19,6 +19,11 @@ Model, check, slice, send, monitor and log, with phone alerts. A safe, documente
 > **Unofficial.** This project is not affiliated with, endorsed by or supported by Bambu Lab, Autodesk, Anthropic, Prusa, the Klipper, Moonraker or OctoPrint
 > projects, or the OrcaSlicer project. LAN access modes change how your printer is reachable; you are responsible for your own network and hardware.
 
+> **This is a working template under active development, not a finished, versioned release.** Start small: run it on a test cube or another small, low-stakes
+> part first, on a printer you can watch, before trusting it with a long print or your good filament. Scale up size and complexity gradually as you build
+> confidence with it on your own hardware. The [table below](#what-is-proven-and-what-is-not) says exactly what has and has not been verified; a real print
+> can still fail for reasons the settings alone don't catch (see the CLI slicing row for one found this way).
+
 ---
 
 ## Contents

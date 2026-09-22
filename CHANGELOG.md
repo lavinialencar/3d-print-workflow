@@ -5,6 +5,9 @@ All notable changes are recorded here. Format based on [Keep a Changelog](https:
 
 ## [Unreleased]
 
+### Changed
+- README: added an "active development, not a finished release" callout next to the existing unofficial-project notice, telling a new user to start on a small, low-stakes part and scale up gradually rather than trusting the template with a long print right away.
+
 ## [0.2.1] - 2026-09-22
 
 ### Added
