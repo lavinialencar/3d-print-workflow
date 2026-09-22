@@ -385,6 +385,7 @@ SRC = {
     "yt-modbot-wallorder": "https://www.youtube.com/watch?v=BxJdSkawGlQ",
     "yt-katzby-mini": "https://www.youtube.com/watch?v=ic1j4-f8kLc",
     "yt-layerlogic-support": "https://www.youtube.com/watch?v=g-nnZy2MYvI",
+    "yt-arachne-test": "https://www.youtube.com/watch?v=RBaAAEdUqLs",
     "project": "this project",
 }
 
@@ -562,7 +563,10 @@ def recommend(features, finish, purpose, backlit, nozzle=NOZZLE, uses=()):
             rule("round_walls", "seam_position", "aligned", "Aligned puts the seam in a hidden facet; on a smooth cylinder nothing hides it, so scarf goes on top.", "orca-seam")
             if min(size[0], size[1]) * 3.14 >= 20:
                 rule("round_walls", "seam_slope_type", "external", "Scarf seam on the contour: the only seam type that leaves no visible mark. Needs pressure advance calibrated first, and a wall longer than the 20 mm scarf. "
-                     "Sources disagree on scarf height (0 to 50% of a layer).", "orca-seam", "disputed")
+                     "Scarf height: one wiki page says 0 to 50% of a layer, but a tester who tried raising it (and the step count) from the Orca default saw no visible difference, so the default (0, 10 steps) is kept rather than treated as a real dispute.",
+                     "orca-seam", "sourced")
+                rule("round_walls", None, None, "Arachne vs Classic still applies to a round wall too: a printed side-by-side test (a tapering wall, thick to thin) found Classic cleaner on the outer wall but leaving a gap at both the thick and the thin end, while Arachne closed the thin-end gap but bulged outward at several points. Slice both if the wall shows a visible seam or bulge.",
+                     "yt-arachne-test", "disputed", apply=False)
 
     # ---- overhangs, supports, bridges
     if "overhang" in kinds:
