@@ -169,6 +169,31 @@ flat, centred, brim-less test part:
 Neither crash happened in the GUI for the same part and settings — both are CLI-only, and both are silent or near-silent (`run found error, exit`, or
 nothing at all) unless you go looking in `~/Library/Logs/DiagnosticReports/OrcaSlicer-*.ips` for the actual signal and stack trace.
 
+## A third crash: opening a `.3mf` from outside the app (Finder, `open -a`, a script) can hang or crash OrcaSlicer
+
+Handing OrcaSlicer a file from the command line — `open -a OrcaSlicer part.stl` or `part.gcode.3mf` on macOS, the
+equivalent on other platforms, or a double-click in Finder while the app is already running — behaves very
+differently depending on the file type, confirmed 22/09/2026 (OrcaSlicer 2.4.2, macOS):
+
+- **A plain `.stl`, opened while OrcaSlicer is not already running, works perfectly.** The object lands on the plate
+  with no dialog at all. This is a reliable, scriptable way to load a new part.
+- **A `.gcode.3mf` (a real, already-sliced project, e.g. one produced by `scripts/package_gcode_as_3mf.py`) does
+  not.** It opens a blank, non-functional "Import SLA archive" dialog instead of loading the project — confirmed by
+  reading OrcaSlicer's own source (`src/slic3r/GUI/Jobs/SLAImportDialog.hpp`, `Plater.cpp`'s file-type dispatch,
+  which classifies incoming files with a filename regex, not by their actual content) — plausibly tripped up by the
+  double extension. This reproduces on a cold launch, not only when another project is already open.
+- **Sending a second file to an OrcaSlicer that is already running is worse: it can crash the whole application**
+  (`SIGABRT`, inside `NSApplication terminate:` unwinding into an uncaught C++ exception in the bundled
+  `libbambu_networking` library during shutdown) instead of just opening a second window or reusing the existing
+  one. Repeated `open -a` calls were also observed spawning duplicate OrcaSlicer processes rather than reusing the
+  running instance.
+
+**Workaround:** script the *first* file of a session with `open -a`/equivalent (STL only) if you like, but never
+rely on it for a `.3mf` project, and never send a second file to an already-running instance from outside the app —
+open it from OrcaSlicer's own File > Open Project dialog instead, which does not have this bug. This is a real bug
+in OrcaSlicer's own file-open dispatch, not something a wrapper script can fix from the outside; fixing it properly
+means patching and rebuilding OrcaSlicer itself, which is out of scope here.
+
 Before recommending, let the shape speak: [12 Slicing by part](12-slicing-by-part.md) measures the model and turns it into questions and settings.
 
 ## Settings matching is not enough: the tilted, tree-supported cube was physically printed too

@@ -5,12 +5,15 @@ All notable changes are recorded here. Format based on [Keep a Changelog](https:
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-09-22
+
 ### Added
 - `scripts/package_gcode_as_3mf.py`: wraps a plain `.gcode` into a real Bambu `.gcode.3mf` by swapping only the template's `Metadata/plate_N.gcode` (and its `.md5`), leaving `Metadata/slice_info.config` untouched. Exists because a Bambu printer ignores AMS mapping entirely for a bare `.gcode` file, confirmed on the official Bambu Lab forum: AMS mapping lives in that config file, which only exists inside a `.3mf`. 11 tests; verified byte-for-byte on a real template and a real command-line-sliced G-code, not yet print-proven through this exact script end to end.
 
 ### Changed
 - README: added an "active development, not a finished release" callout next to the existing unofficial-project notice, telling a new user to start on a small, low-stakes part and scale up gradually rather than trusting the template with a long print right away.
 - README: the command-line slicing row now records that the tilted, tree-supported test cube was physically printed, not just settings-compared — a first print failed (support detached mid-print, caught by the printer's spaghetti-detection camera) because the default support interface is tuned for easy removal rather than for a small, steeply overhung contact area; tightening the top interface fixed it. Added rows for sending a plain G-code straight to a printer (works, but can't select an AMS slot) and for `package_gcode_as_3mf.py`.
+- docs/06: documented a third OrcaSlicer crash, this one in opening a file from outside the app rather than in slicing. A plain `.stl` opened from the command line while OrcaSlicer is not yet running works reliably; a `.gcode.3mf` opened the same way opens a broken, empty "Import SLA archive" dialog instead of the project (traced to the file-type dispatch in OrcaSlicer's own `Plater.cpp`), and sending a second file to an already-running OrcaSlicer can crash the whole app or spawn a duplicate process instead of reusing the window. Workaround: script only the first STL of a session this way; open a `.3mf` from OrcaSlicer's own File > Open Project dialog instead, always.
 
 ## [0.2.1] - 2026-09-22
 
@@ -53,6 +56,7 @@ Bambu Lab's closed ecosystem.
 - Command-line slicing is not verified to match the GUI: the slicer's CLI does not resolve profile inheritance like the GUI does (see docs/06).
 - Linux and Windows are untested; only the scheduler is macOS-specific.
 
-[Unreleased]: https://github.com/lavinialencar/3d-print-workflow/compare/v0.2.1...HEAD
+[Unreleased]: https://github.com/lavinialencar/3d-print-workflow/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/lavinialencar/3d-print-workflow/compare/v0.2.1...v0.3.0
 [0.2.1]: https://github.com/lavinialencar/3d-print-workflow/compare/v0.1.0...v0.2.1
 [0.1.0]: https://github.com/lavinialencar/3d-print-workflow/releases/tag/v0.1.0
