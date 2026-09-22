@@ -5,6 +5,8 @@ All notable changes are recorded here. Format based on [Keep a Changelog](https:
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-09-22
+
 ### Added
 - `scripts/fix_bambu_machine_profile.py`: patches a Bambu machine profile with the keys it silently inherits but that OrcaSlicer's `--load-settings` does not resolve (about 30 for a P2S, including the real bed size), confirmed by comparing a GUI-exported G-code against a command-line slice of the same part. 11 tests on a fake profile tree.
 - `scripts/analyze_part.py`: measures a model (slopes, flat tops, round walls, overhangs, bridges, wall thickness, six orientations) and turns it into questions for the owner, global and per-object settings, and three scenarios to slice and compare. Reads STL and 3MF plates. Needs numpy.
@@ -15,6 +17,9 @@ All notable changes are recorded here. Format based on [Keep a Changelog](https:
 
 ### Changed
 - docs/06: the command-line versus GUI difference is now resolved, not just suspected. A real cube, sliced both ways and compared, confirmed the root cause (the CLI does not walk a machine profile's `inherits` chain) and proved the fix (`fix_bambu_machine_profile.py`): after patching, every setting that shapes the print matched the GUI exactly. Re-confirmed on a 45°-tilted cube with tree supports on: same 76-setting gap, same non-quality categories, every support-related setting matched. Documented two new CLI-only crashes found along the way: `--rotate`/`--rotate-x`/`--rotate-y` segfault (`Plater::build_volume()` on a null GUI singleton, via the auto-arrange path) and a brim near the bed edge on tilted+supported geometry can crash `Print::process` (`make_brim`/`outer_inner_brim_area`), non-deterministically. Neither reproduces in the GUI; both have documented workarounds.
+
+### Security
+- `scripts/analyze_part.py`: refuses a 3MF whose `.model` XML declares a `DOCTYPE` before parsing it, closing a billion-laughs-style entity-expansion denial of service. A `.model` file never legitimately has a `DOCTYPE` (it is not part of the 3MF format), so one is treated as a sign of a malicious file, which is a real risk for a script whose whole job is reading 3MFs downloaded from Printables/Thingiverse. Found in a security pass across her GitHub repos, not from an incident.
 
 ## [0.1.0] - 2026-09-20
 
@@ -41,5 +46,6 @@ Bambu Lab's closed ecosystem.
 - Command-line slicing is not verified to match the GUI: the slicer's CLI does not resolve profile inheritance like the GUI does (see docs/06).
 - Linux and Windows are untested; only the scheduler is macOS-specific.
 
-[Unreleased]: https://github.com/lavinialencar/3d-print-workflow/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/lavinialencar/3d-print-workflow/compare/v0.2.1...HEAD
+[0.2.1]: https://github.com/lavinialencar/3d-print-workflow/compare/v0.1.0...v0.2.1
 [0.1.0]: https://github.com/lavinialencar/3d-print-workflow/releases/tag/v0.1.0
