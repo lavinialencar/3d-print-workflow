@@ -139,7 +139,7 @@ Everything runs on your computer and talks to the printer over your local networ
 ```
 .
 ├── README.md                    you are here
-├── docs/                        twelve guides, from quick start to privacy
+├── docs/                        thirteen guides, from quick start to privacy
 │   ├── 00-quick-start.md            pick your track
 │   ├── 01-architecture.md
 │   ├── 02-network-and-fixed-ip.md   any printer
@@ -153,6 +153,7 @@ Everything runs on your computer and talks to the printer over your local networ
 │   ├── 10-troubleshooting.md
 │   ├── 11-privacy-and-publishing.md
 │   ├── 12-slicing-by-part.md        measure the shape, ask, decide, compare scenarios
+│   ├── 13-tool-radar.md             what else exists, each with a status
 │   └── examples/example-session.md    what a session looks like (illustrative)
 ├── scripts/                     the seven tools (standard library, except the part analyzer, which needs numpy)
 ├── skill/print-conductor/       the thin conductor skill, as a template

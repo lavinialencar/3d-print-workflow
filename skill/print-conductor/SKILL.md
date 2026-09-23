@@ -30,6 +30,11 @@ pitfalls. Then read only the part each step asks for, never whole files.
    user having seen it.
 5. Edit notes **in place**. Re-read a file right before writing. Never create a new file to update an
    existing one.
+6. **"Is there a tool for X?"** Read `docs/13-tool-radar.md` first (Gridfinity from a photo, AI 3D
+   generators, textures, multicolor splitting, slicer forks, filament sites, each with a status). Add
+   any new tool you come across there.
+7. **Filament data comes from 3D Filament Profiles** (`3dfilamentprofiles.com`, read-only, no login):
+   hex color, brand settings, empty spool weight. The inventory stays in `KB/filament-log.md`.
 
 ## The cycle
 

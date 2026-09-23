@@ -5,6 +5,13 @@ All notable changes are recorded here. Format based on [Keep a Changelog](https:
 
 ## [Unreleased]
 
+### Added
+- `docs/13-tool-radar.md`: one page for the tools around the main cycle (Gridfinity from a photo, AI 3D generators, textures, multicolor splitting, OrcaSlicer forks, filament sites), each with a status: in the flow, on demand, radar or dropped. Nothing installed; the conductor reads it when asked "is there a tool for X?".
+- The filament database 3D Filament Profiles enters the flow, read-only: hex colors, brand settings and empty spool weight.
+
+### Changed
+- Conductor skill template: rules 6 (read the tool radar first) and 7 (filament data from 3D Filament Profiles).
+
 ## [0.3.0] - 2026-09-22
 
 ### Added
