@@ -49,6 +49,10 @@ pitfalls. Then read only the part each step asks for, never whole files.
    then read the slicing section of `KB/printer-profile.md` and give the recommendation in the format defined there, split into global settings and
    per-object overrides. Slice the scenarios it proposes and show the real time and grams before the owner chooses. A failure seen in a real print goes
    back into the rules, not just into this one part. Method: `docs/12-slicing-by-part.md`.
+   **A part that needs support, above all one tilted for strength:** also offer a scenario with support fins built into the mesh
+   (`printfins.com`: bed pad and tines on, slicer support off), comparing time and grams with the slicer's support. Not yet tested.
+   **A part with a thin tip at the top:** a short layer time melts the tip. Never lower the minimum print speed (heat creep);
+   offer another part on the plate or a sacrificial tower. Both in `docs/12-slicing-by-part.md`.
 4. **Slice.** The `gcode` skill with OrcaSlicer (or PrusaSlicer, CuraEngine): `inspect`, `slice --dry-run`, `slice --execute`,
    `validate`.
 5. **Send.** Through the slicer, done by the user. Not verified by you unless a reading shows it.

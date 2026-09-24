@@ -85,7 +85,7 @@ Decision of 2026-09-23: **none of these replaces OrcaSlicer in the flow.**
 | Slicer | What it is | Status and why |
 |---|---|---|
 | Full Spectrum | OrcaSlicer fork that blends colors by dithering; 4 filaments can look like 12 or more | radar, for the day multicolor becomes a real need. Many color changes means heavy purging on a single nozzle; test on a small part first |
-| JustPrint (Obico) | OrcaSlicer fork with an AI that edits settings | dropped. Its suggestions ran heavy on infill and supports. In this workflow the assistant already does this with `analyze_part.py` and [docs/12](12-slicing-by-part.md), explaining the reason for each change |
+| JusPrin (Obico) | OrcaSlicer fork with an AI that edits settings | dropped. Its suggestions ran heavy on infill and supports. In this workflow the assistant already does this with `analyze_part.py` and [docs/12](12-slicing-by-part.md), explaining the reason for each change |
 | Prusa EasyPrint | Browser and mobile slicer | dropped for now. Slicing on a phone was not a need, and AMS printing needs a real project `.3mf` (see [docs/06](06-slicing-with-an-assistant.md)). Some brands block printing from it; not checked for Bambu |
 | PreFlight | PrusaSlicer fork with advanced features | dropped. Profile migration and interface were reported as worse |
 

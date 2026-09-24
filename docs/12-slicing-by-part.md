@@ -172,6 +172,38 @@ Then the owner answers the one question that only they can: "how much time do I 
 > Comparing scenarios is only meaningful if the command-line slice matches what the GUI would produce; `fix_bambu_machine_profile.py` closes the gap
 > for a Bambu printer. Verify it once with `gcode_settings_diff.py`.
 
+## Two cases the shape alone does not solve
+
+### A part that needs support: support fins
+
+Instead of the slicer's tree or grid support, the support becomes part of the mesh: thin fins that hold the part and break off clean.
+The idea comes from Slant 3D; [`printfins.com`](https://printfins.com) automates it, free, open source, running in the browser (the file never leaves
+your computer). Think of it when a part must print tilted for strength (layers crossing the load, like a 45° wall bracket) and would be weak lying flat.
+
+Three pieces, and it fails without any of them:
+
+1. **A bed pad.** Without it the tilted part has nothing to stand on and tips over.
+2. **Tines.** Small teeth that fuse the fin to the side of the part and lock it in place. Without them the fin only leans, the part moves and the print fails.
+   They leave a small mark.
+3. **The slicer's support turned off**, or it adds a tree on top of the fins.
+
+Export as 3MF and fins and part come in as separate objects, so you can switch the fins off and slice the slicer-support version of the same plate to
+compare time and grams. The author's own numbers (a few grams on a cube, hundreds of grams and many hours on a large part) are not verified here.
+**State: not yet tested in this workflow.**
+
+### A thin tip that comes out melted
+
+A cone, a pin, the top of a tower: the tip comes out soft and deformed even with the part-cooling fan at 100%. The cause is layer time. At the tip each
+layer takes a fraction of a second, too little for PLA to cool before the next one lands. The filament profile's *minimum layer time* tries to slow down,
+but only down to the *minimum print speed*, and the tip is already there.
+
+- **Do not** lower the minimum print speed: the nozzle lingers on hot plastic and you trade the melted tip for heat creep.
+- **Do** give each layer more time to cool: print another part on the same plate, or add a small sacrificial tower beside it.
+- Speed-up recipes that raise the minimum speed and cut the minimum layer time make this defect worse on any part with a tip.
+
+In step 2, when the model or the analyzer shows a narrow tip near the top, ask: "will there be another part on the plate? if not, a sacrificial tower?".
+**State: not yet tested in this workflow.**
+
 ## What this does not do
 
 - It does not slice, and it does not know time or grams.
