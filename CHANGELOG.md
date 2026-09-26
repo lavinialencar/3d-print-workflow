@@ -9,6 +9,8 @@ All notable changes are recorded here. Format based on [Keep a Changelog](https:
 - `docs/13-tool-radar.md`: one page for the tools around the main cycle (Gridfinity from a photo, AI 3D generators, textures, multicolor splitting, OrcaSlicer forks, filament sites), each with a status: in the flow, on demand, radar or dropped. Nothing installed; the conductor reads it when asked "is there a tool for X?".
 - The filament database 3D Filament Profiles enters the flow, read-only: hex colors, brand settings and empty spool weight.
 
+- docs/13, second batch from The Next Layer's "12 new 3D printing apps": new sections for calibration (CN3D Docs), previewing files on a Mac (threemf in the flow; ThumbHost3mf dropped after a side-by-side test), remixing a downloaded model (Mesh to STEP, with an upload warning) and managing several printers (Watchtower); plus Spoolio, PaintPort, OrcaSlicer Image Map and PrusaSlicer 3.0.
+
 ### Fixed
 - docs/13: the dropped Obico OrcaSlicer fork is JusPrin, not "JustPrint" (justprint.io is an unrelated 3D marketplace).
 
