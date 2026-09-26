@@ -19,12 +19,13 @@ jobs:
           - { os: ubuntu-latest, python: "3.12" }
           - { os: macos-latest,  python: "3.12" }
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
           python-version: ${{ matrix.python }}
       - name: Install the optional dependency (numpy, for the part analyzer)
-        run: python -m pip install numpy
+        # Exact versions: 1.24.4 is the last numpy for Python 3.8 (wheels up to 3.11); 2.5.3 needs 3.12+.
+        run: python -m pip install "numpy==1.24.4; python_version < '3.12'" "numpy==2.5.3; python_version >= '3.12'"
       - name: Compile every script
         run: python -m py_compile scripts/*.py tools/*.py
       - name: Unit tests (synthetic data only)
@@ -34,7 +35,7 @@ jobs:
     name: no personal data
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - name: Shape-based scan (IPs, MACs, e-mails, home paths, topics)
         run: python3 tools/scan_personal_data.py
 
@@ -42,7 +43,7 @@ jobs:
     name: documentation links
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - name: Every relative link and anchor resolves
         run: python3 tools/check_links.py
 
@@ -50,9 +51,9 @@ jobs:
     name: secret scan (gitleaks)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           fetch-depth: 0
-      - uses: gitleaks/gitleaks-action@v2
+      - uses: gitleaks/gitleaks-action@ff98106e4c7b2bc287b24eaf42907196329070c7 # v2.3.9
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

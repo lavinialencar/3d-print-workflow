@@ -66,6 +66,13 @@ An API key is a password: keep it out of notes, chats and repositories.
 
 OctoPrint has no explicit "finished" state, so the adapter reports `Operational` with 100% completion as FINISH, and `Operational` otherwise as IDLE.
 
+## http or https
+
+`"scheme"` in `printer.json` is `"http"` (the default) or `"https"`. Over plain http the API key travels in clear text, so anyone on the
+same network can read it: use http **only on a trusted home LAN**. When the printer is reached through a reverse proxy with TLS, or from
+anywhere outside that LAN, set `"scheme": "https"` (the OctoPrint port then defaults to 443). Never expose Moonraker or OctoPrint to the
+internet over plain http.
+
 ## Slicing and everything else
 
 Steps 1 to 4 and 7 of the workflow (model, check, recommend, slice, log) do not depend on the printer. The `gcode` skill drives OrcaSlicer, PrusaSlicer or

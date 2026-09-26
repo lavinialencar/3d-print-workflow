@@ -127,6 +127,62 @@ class MonitorTests(unittest.TestCase):
             self.assertEqual(mon.choose_backend(None, tmp), "moonraker")
             self.assertEqual(mon.choose_backend("octoprint", tmp), "octoprint")
 
+    def test_job_name_is_stripped_of_escapes_and_capped(self):
+        job = "\x1b[2J\x1b]0;pwned\x07Evil\njob\u202e" + "x" * 500
+        _, text, _ = mon.build_message(self.reading("FINISH", job=job, error=None))
+        self.assertNotIn("\x1b", text)
+        self.assertNotIn("\n", text)
+        self.assertNotIn("\u202e", text)
+        self.assertLessEqual(len(mon.clean_text(job)), mon.JOB_MAX)
+        self.assertTrue(text.startswith("]0;pwned Evil job"))
+
+    def test_ntfy_sends_the_token_as_bearer_only_when_set(self):
+        sent = []
+
+        class Response:
+            def read(self):
+                return b""
+
+        def fake_urlopen(request, timeout=0):
+            sent.append(request)
+            return Response()
+
+        original = mon.urllib.request.urlopen
+        mon.urllib.request.urlopen = fake_urlopen
+        try:
+            with tempfile.TemporaryDirectory() as tmp:
+                path = os.path.join(tmp, "ntfy.json")
+                write(path, {"server": "https://ntfy.example.org", "topic": "t", "token": "tk_made_up"})
+                self.assertTrue(mon.send_ntfy(path, "T", "x", "default"))
+                write(path, {"topic": "t"})
+                self.assertTrue(mon.send_ntfy(path, "T", "x", "default"))
+        finally:
+            mon.urllib.request.urlopen = original
+        self.assertEqual(sent[0].get_header("Authorization"), "Bearer tk_made_up")
+        self.assertEqual(sent[0].full_url, "https://ntfy.example.org")
+        self.assertIsNone(sent[1].get_header("Authorization"))
+        self.assertEqual(sent[1].full_url, "https://ntfy.sh")
+
+    def test_http_backends_honour_https_and_refuse_other_schemes(self):
+        urls = []
+        original = mon.http_get_json
+        mon.http_get_json = lambda url, api_key, timeout: urls.append(url) or {}
+        try:
+            with tempfile.TemporaryDirectory() as tmp:
+                write(os.path.join(tmp, "printer.json"), {"host": "192.0.2.30", "scheme": "https", "api_key": "k"})
+                mon.read_http_backend("octoprint", tmp)
+                write(os.path.join(tmp, "printer.json"), {"host": "192.0.2.20"})
+                mon.read_http_backend("moonraker", tmp)
+                write(os.path.join(tmp, "printer.json"), {"host": "192.0.2.20", "scheme": "ftp"})
+                reading, error = mon.read_http_backend("moonraker", tmp)
+        finally:
+            mon.http_get_json = original
+        self.assertEqual(urls[0], "https://192.0.2.30:443/api/job")
+        self.assertTrue(urls[1].startswith("http://192.0.2.20:7125/"))
+        self.assertEqual(len(urls), 2)
+        self.assertIsNone(reading)
+        self.assertIn("scheme", error)
+
     def test_http_backend_without_host_reports_a_clear_error(self):
         with tempfile.TemporaryDirectory() as tmp:
             reading, error = mon.read_http_backend("moonraker", tmp)
@@ -165,6 +221,30 @@ class GcodeConsumptionTests(unittest.TestCase):
             with zipfile.ZipFile(path, "w") as archive:
                 archive.writestr("Metadata/plate_1.gcode", GCODE)
             self.assertEqual(gc.parse(gc.read_text(path))["grams_total"], 3.86)
+
+    def test_zip_bomb_3mf_is_refused(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = os.path.join(tmp, "bomb.gcode.3mf")
+            with zipfile.ZipFile(path, "w", compression=zipfile.ZIP_DEFLATED) as archive:
+                archive.writestr("Metadata/plate_1.gcode", b"G1\n" * (1024 * 1024))  # ~1000:1 once deflated
+            with self.assertRaises(SystemExit):
+                gc.read_text(path)
+            with self.assertRaises(SystemExit):
+                gdiff.read_text(path)
+
+    def test_oversized_total_is_refused_even_at_a_normal_ratio(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = os.path.join(tmp, "big.gcode.3mf")
+            with zipfile.ZipFile(path, "w") as archive:
+                archive.writestr("Metadata/plate_1.gcode", GCODE)
+                archive.writestr("Metadata/plate_2.gcode", GCODE)
+            old = gc.ZIP_MAX_TOTAL
+            gc.ZIP_MAX_TOTAL = len(GCODE) + 1  # stands in for 500 MB
+            try:
+                with self.assertRaises(SystemExit):
+                    gc.read_text(path)
+            finally:
+                gc.ZIP_MAX_TOTAL = old
 
 
 class StudioToOrcaTests(unittest.TestCase):

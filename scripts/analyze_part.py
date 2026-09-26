@@ -49,6 +49,23 @@ PRESETS = {0.08: "0.08mm High Quality @BBL P2S", 0.12: "0.12mm High Quality @BBL
            0.16: "0.16mm Standard @BBL P2S", 0.20: "0.20mm Standard @BBL P2S",
            0.24: "0.24mm Standard @BBL P2S"}
 
+# Zip-bomb guard: a .3mf is a zip, and a downloaded one is untrusted. The central directory's declared
+# sizes are checked before anything is inflated (zipfile never inflates past the declared size).
+ZIP_MAX_ENTRY = 200 * 1024 * 1024   # bytes, one entry uncompressed
+ZIP_MAX_TOTAL = 500 * 1024 * 1024   # bytes, all entries together
+ZIP_MAX_RATIO = 100                 # uncompressed:compressed, checked on entries over 1 MB
+
+
+def check_zip(archive):
+    """Raise ValueError when the archive would inflate to something absurd."""
+    total = 0
+    for info in archive.infolist():
+        total += info.file_size
+        if info.file_size > ZIP_MAX_ENTRY or total > ZIP_MAX_TOTAL:
+            raise ValueError(f"{info.filename}: archive too large once uncompressed, refused")
+        if info.file_size > 1024 * 1024 and info.file_size > ZIP_MAX_RATIO * max(info.compress_size, 1):
+            raise ValueError(f"{info.filename}: compression ratio over {ZIP_MAX_RATIO}:1, refused as a possible zip bomb")
+
 
 # --------------------------------------------------------------------------- reading meshes
 def read_stl(path):
@@ -79,6 +96,7 @@ def _parse_transform(text):
 def read_3mf(path):
     """Every build item of a 3MF as (name, triangles), components and transforms resolved."""
     with zipfile.ZipFile(path) as z:
+        check_zip(z)
         names = [n for n in z.namelist() if n.lower().endswith(".model")]
         objects = {}
         build = []

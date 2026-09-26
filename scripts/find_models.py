@@ -30,6 +30,7 @@ Usage
 import argparse
 import json
 import os
+import re
 import sys
 import urllib.error
 import urllib.parse
@@ -45,6 +46,32 @@ QUERY = """query($q: String!, $n: Int!) {
             license { name } user { publicUsername } }
   }
 }"""
+TEXT_MAX = 120                                   # chars kept from any name, author or licence from a site
+# ANSI CSI sequences, then any C0/C1 control, then the Unicode bidi and zero-width marks that reorder or hide text
+CONTROL = re.compile(r"\x1b\[[0-?]*[ -/]*[@-~]|[\x00-\x1f\x7f-\x9f\u200b-\u200f\u202a-\u202e\u2066-\u2069]")
+THINGIVERSE_HOSTS = ("www.thingiverse.com", "thingiverse.com")
+
+
+def clean(value, limit=TEXT_MAX):
+    """Text from a site goes to a terminal and to the assistant: no control characters or escape
+    sequences, whitespace collapsed, length capped. None stays None."""
+    if value is None:
+        return None
+    text = " ".join(CONTROL.sub(" ", str(value)).split())
+    return text if len(text) <= limit else text[:limit - 3] + "..."
+
+
+def thingiverse_url(item):
+    """public_url only when it really is https on thingiverse.com; otherwise built from the id."""
+    url = item.get("public_url")
+    try:
+        parts = urllib.parse.urlsplit(url)
+        if parts.scheme == "https" and parts.hostname in THINGIVERSE_HOSTS and not parts.username and not parts.password \
+                and parts.port is None and not CONTROL.search(url):
+            return url
+    except (TypeError, AttributeError, ValueError):  # not a string, or a port that is not a number
+        pass
+    return f"https://www.thingiverse.com/thing:{urllib.parse.quote(str(item['id']), safe='')}"
 
 
 def load_token(path=TOKEN_FILE):
@@ -62,7 +89,7 @@ def search_printables(term, limit=8, opener=urllib.request.urlopen):
     request = urllib.request.Request(PRINTABLES, body, {"Content-Type": "application/json", "User-Agent": USER_AGENT})
     payload = json.load(opener(request, timeout=20))
     if payload.get("errors"):
-        raise RuntimeError(payload["errors"][0].get("message", "search failed"))
+        raise RuntimeError(clean(payload["errors"][0].get("message", "search failed")))
     return ((payload.get("data") or {}).get("result") or {}).get("items") or []
 
 
@@ -75,22 +102,24 @@ def search_thingiverse(term, limit, token, opener=urllib.request.urlopen):
 
 def shape_printables(item):
     return {
-        "site": "Printables", "id": item["id"], "name": item.get("name"), "author": (item.get("user") or {}).get("publicUsername"),
+        "site": "Printables", "id": clean(item["id"]), "name": clean(item.get("name")),
+        "author": clean((item.get("user") or {}).get("publicUsername")),
         "likes": item.get("likesCount") or 0, "downloads": item.get("downloadCount") or 0,
-        "makes": item.get("makesCount") or 0, "published": (item.get("datePublished") or "")[:10],
-        "license": (item.get("license") or {}).get("name"),
-        "url": f"https://www.printables.com/model/{item['id']}-{item.get('slug', '')}",
+        "makes": item.get("makesCount") or 0, "published": clean((item.get("datePublished") or "")[:10]),
+        "license": clean((item.get("license") or {}).get("name")),
+        "url": "https://www.printables.com/model/" + urllib.parse.quote(f"{item['id']}-{item.get('slug') or ''}", safe="-_."),
     }
 
 
 def shape_thingiverse(item):
     derivatives = item.get("allows_derivatives")
     return {
-        "site": "Thingiverse", "id": str(item["id"]), "name": item.get("name"), "author": (item.get("creator") or {}).get("name"),
+        "site": "Thingiverse", "id": clean(item["id"]), "name": clean(item.get("name")),
+        "author": clean((item.get("creator") or {}).get("name")),
         "likes": item.get("like_count") or 0, "downloads": None, "makes": item.get("make_count") or 0,
-        "published": (item.get("created_at") or "")[:10],
+        "published": clean((item.get("created_at") or "")[:10]),
         "license": None if derivatives is None else ("derivatives allowed" if derivatives else "NO derivatives"),
-        "url": item.get("public_url") or f"https://www.thingiverse.com/thing:{item['id']}",
+        "url": thingiverse_url(item),
         "ai_generated": bool(item.get("is_ai")),
     }
 

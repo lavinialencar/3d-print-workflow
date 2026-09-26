@@ -27,6 +27,23 @@ import re
 import sys
 import zipfile
 
+# Zip-bomb guard: a .3mf is a zip, and a downloaded one is untrusted. The central directory's declared
+# sizes are checked before anything is inflated (zipfile never inflates past the declared size).
+ZIP_MAX_ENTRY = 200 * 1024 * 1024   # bytes, one entry uncompressed
+ZIP_MAX_TOTAL = 500 * 1024 * 1024   # bytes, all entries together
+ZIP_MAX_RATIO = 100                 # uncompressed:compressed, checked on entries over 1 MB
+
+
+def check_zip(archive):
+    """Raise ValueError when the archive would inflate to something absurd."""
+    total = 0
+    for info in archive.infolist():
+        total += info.file_size
+        if info.file_size > ZIP_MAX_ENTRY or total > ZIP_MAX_TOTAL:
+            raise ValueError(f"{info.filename}: archive too large once uncompressed, refused")
+        if info.file_size > 1024 * 1024 and info.file_size > ZIP_MAX_RATIO * max(info.compress_size, 1):
+            raise ValueError(f"{info.filename}: compression ratio over {ZIP_MAX_RATIO}:1, refused as a possible zip bomb")
+
 # Keys that describe the run, not the settings: hidden unless --all.
 NOISE_EXACT = {"print_settings_id", "filament_settings_id", "printer_settings_id", "total_layer_number",
                "inherits_group", "filename_format"}
@@ -37,6 +54,10 @@ NOISE_CONTAINS = ("time", "weight")
 def read_text(path):
     if path.lower().endswith(".3mf"):
         with zipfile.ZipFile(path) as archive:
+            try:
+                check_zip(archive)
+            except ValueError as error:
+                sys.exit(f"{path}: {error}")
             plates = sorted(n for n in archive.namelist() if re.match(r"Metadata/plate_\d+\.gcode$", n))
             if not plates:
                 sys.exit(f"{path}: no Metadata/plate_N.gcode inside the .3mf")

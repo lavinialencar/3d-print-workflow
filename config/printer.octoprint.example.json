@@ -1,5 +1,6 @@
 {
   "backend": "octoprint",
+  "scheme": "http",
   "host": "192.0.2.30",
   "port": 80,
   "api_key": "REPLACE-WITH-YOUR-OCTOPRINT-API-KEY"

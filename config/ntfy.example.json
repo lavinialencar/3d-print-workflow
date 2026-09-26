@@ -1,4 +1,5 @@
 {
   "server": "https://ntfy.sh",
-  "topic": "print-REPLACE-WITH-A-LONG-RANDOM-STRING"
+  "topic": "print-REPLACE-WITH-A-LONG-RANDOM-STRING",
+  "token": ""
 }

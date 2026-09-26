@@ -9,6 +9,7 @@ import os
 import sys
 import tempfile
 import unittest
+import zipfile
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "scripts"))
 
@@ -354,6 +355,14 @@ class AnalyzeTests(unittest.TestCase):
             parts = ap.load_parts(path)
             self.assertEqual(len(parts), 1)
             self.assertEqual(ap.main([path, "--json", "--finish", "smooth"]), 0)
+
+    def test_a_zip_bomb_3mf_is_refused_before_inflating(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = os.path.join(tmp, "bomb.3mf")
+            with zipfile.ZipFile(path, "w", compression=zipfile.ZIP_DEFLATED) as z:
+                z.writestr("3D/3dmodel.model", b" " * (2 * 1024 * 1024))  # ~1000:1 once deflated
+            with self.assertRaises(ValueError):
+                ap.load_parts(path)
 
 
 if __name__ == "__main__":

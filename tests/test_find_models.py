@@ -140,6 +140,36 @@ class ThingiverseTests(unittest.TestCase):
             self.assertIsNone(fm.load_token(os.path.join(tmp, "missing")))
 
 
+class UntrustedTextTests(unittest.TestCase):
+    def test_public_url_is_used_only_on_https_thingiverse(self):
+        good = dict(THINGIVERSE[0])
+        self.assertEqual(fm.shape_thingiverse(good)["url"], "https://www.thingiverse.com/thing:10")
+        for bad in ("http://www.thingiverse.com/thing:10", "https://evil.example/thing:10", "javascript:alert(1)",
+                    "https://www.thingiverse.com.evil.example/x", "https://user@www.thingiverse.com/x",  # scan-ignore: credentials-in-URL test case
+                    "https://thingiverse.com:8443/x", "https://thingiverse.com:abc/x", "https://www.thingiverse.com/\x1b[31m", 42):
+            item = dict(good, public_url=bad)
+            self.assertEqual(fm.shape_thingiverse(item)["url"], "https://www.thingiverse.com/thing:10", bad)
+        self.assertEqual(fm.shape_thingiverse(dict(good, public_url="https://thingiverse.com/thing:10"))["url"],
+                         "https://thingiverse.com/thing:10")
+
+    def test_names_and_authors_lose_control_characters_and_are_capped(self):
+        item = dict(PRINTABLES[0], name="\x1b[31mRed\x1b[0m\r\n  Hook\x07\x9b" + "y" * 300,
+                    user={"publicUsername": "ana\u202e\tmoc"})
+        shaped = fm.shape_printables(item)
+        self.assertTrue(shaped["name"].startswith("Red Hook "))
+        self.assertLessEqual(len(shaped["name"]), fm.TEXT_MAX)
+        self.assertEqual(shaped["author"], "ana moc")
+        thing = fm.shape_thingiverse(dict(THINGIVERSE[0], name="a\x00b", creator={"name": "\x1b]0;x\x07bob"}))
+        self.assertEqual(thing["name"], "a b")
+        self.assertNotIn("\x1b", fm.render([shaped, thing]))
+
+    def test_an_api_error_message_is_cleaned_too(self):
+        def opener(request, timeout=0):
+            return io.BytesIO(json.dumps({"errors": [{"message": "\x1b[2Jboom"}]}).encode())
+        _, notes = fm.collect("x", 1, "printables", opener, None)
+        self.assertNotIn("\x1b", notes[0])
+
+
 class RankAndRenderTests(unittest.TestCase):
     def setUp(self):
         self.items = [fm.shape_printables(i) for i in PRINTABLES] + [fm.shape_thingiverse(THINGIVERSE[0])]

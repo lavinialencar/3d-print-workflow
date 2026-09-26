@@ -5,6 +5,13 @@ All notable changes are recorded here. Format based on [Keep a Changelog](https:
 
 ## [Unreleased]
 
+### Security
+- Zip-bomb guard in `analyze_part.py`, `gcode_consumption.py`, `gcode_settings_diff.py` and `package_gcode_as_3mf.py`: a `.3mf` is refused before anything is inflated when one entry declares over 200 MB, all entries over 500 MB, or an entry over 1 MB compresses better than 100:1. `package_gcode_as_3mf.py` checks before creating the output file.
+- `find_models.py`: Thingiverse's `public_url` is used only when it is `https` on `thingiverse.com` with no credentials or port; otherwise the link is built from the id. Names, authors, licences and API error messages from Printables and Thingiverse lose control characters (ANSI escapes, C0/C1, bidi and zero-width marks), get whitespace collapsed and are capped at 120 characters before reaching the terminal or the assistant.
+- `print_monitor.py`: optional `"token"` in `ntfy.json`, sent as `Authorization: Bearer`, for a reserved topic or a self-hosted server with access control. The job name and error in a push are cleaned the same way and capped at 80 characters.
+- `print_monitor.py`: `"scheme": "https"` in `printer.json` for Moonraker and OctoPrint behind TLS (default stays `http`); docs/05 now says plain http sends the API key in clear text and belongs only on a trusted LAN.
+- CI: every action pinned by full commit SHA (tag kept in a comment), and numpy pinned to exact versions (1.24.4 below Python 3.12, 2.5.3 from 3.12).
+
 ### Added
 - `docs/13-tool-radar.md`: one page for the tools around the main cycle (Gridfinity from a photo, AI 3D generators, textures, multicolor splitting, OrcaSlicer forks, filament sites), each with a status: in the flow, on demand, radar or dropped. Nothing installed; the conductor reads it when asked "is there a tool for X?".
 - The filament database 3D Filament Profiles enters the flow, read-only: hex colors, brand settings and empty spool weight.

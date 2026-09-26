@@ -60,6 +60,14 @@ python3 -c "import secrets; print('print-' + secrets.token_hex(10))"
 Put the result in `ntfy.json`, then open the ntfy app on your phone, add a subscription, and enter the same
 topic on the same server. Do not paste the topic into a chat, an issue or a screenshot.
 
+A random topic on the public server is the minimum. For more, reserve the topic (an ntfy.sh account) or run your own ntfy server with
+access control, create an access token, and put it in `ntfy.json` as `"token": "tk_..."`: the monitor then sends it as
+`Authorization: Bearer`. Leave `"token"` empty when you do not use one. `"server"` defaults to `https://ntfy.sh`; point it at your own
+server with `https://` whenever the token has to cross a network you do not trust.
+
+Job names reach the push text trimmed to 80 characters, with control characters and escape sequences removed, since anyone who can
+send a file to the printer chooses that name.
+
 ### 3. Try it without sending anything
 
 ```bash
@@ -77,8 +85,11 @@ python3 - <<'PY'
 import json, os, urllib.request
 c = json.load(open(os.path.expanduser("~/.config/print-workflow/ntfy.json")))
 body = json.dumps({"topic": c["topic"], "title": "Monitor test", "message": "It works.", "priority": 3}).encode()
-print(urllib.request.urlopen(urllib.request.Request(c["server"], data=body,
-      headers={"Content-Type": "application/json"}), timeout=15).status)
+headers = {"Content-Type": "application/json"}
+if c.get("token"):
+    headers["Authorization"] = "Bearer " + c["token"]
+print(urllib.request.urlopen(urllib.request.Request(c.get("server", "https://ntfy.sh"), data=body,
+      headers=headers), timeout=15).status)
 PY
 ```
 

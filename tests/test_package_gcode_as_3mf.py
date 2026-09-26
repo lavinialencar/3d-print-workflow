@@ -110,6 +110,26 @@ class PackageTests(unittest.TestCase):
             self.assertEqual(z.read("Metadata/plate_1.gcode").decode("utf-8"), "; template gcode\nG28\n")  # untouched
             self.assertEqual(z.read("Metadata/plate_2.gcode").decode("utf-8"), "; real command-line gcode\nG28\nG1 X10\n")
 
+    def test_zip_bomb_template_is_refused_before_any_output(self):
+        from pathlib import Path
+        bomb = os.path.join(self.tmp.name, "bomb.gcode.3mf")
+        write_fake_template(bomb, other_files={"Metadata/zeros.bin": b"\0" * (2 * 1024 * 1024)})  # ~1000:1 deflated
+        with zipfile.ZipFile(bomb, "a", compression=zipfile.ZIP_DEFLATED) as z:
+            z.writestr("Metadata/zeros2.bin", b"\0" * (2 * 1024 * 1024))
+        with self.assertRaises(pkg.PackageError):
+            pkg.package(Path(bomb), Path(self.gcode), Path(self.out))
+        self.assertFalse(os.path.exists(self.out))
+
+    def test_oversized_entry_is_refused(self):
+        from pathlib import Path
+        old = pkg.ZIP_MAX_ENTRY
+        pkg.ZIP_MAX_ENTRY = 10  # stands in for 200 MB without writing 200 MB
+        try:
+            with self.assertRaises(pkg.PackageError):
+                pkg.package(Path(self.template), Path(self.gcode), Path(self.out))
+        finally:
+            pkg.ZIP_MAX_ENTRY = old
+
     def test_unknown_plate_number_is_refused(self):
         from pathlib import Path
         with self.assertRaises(pkg.PackageError):

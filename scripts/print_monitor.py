@@ -35,6 +35,7 @@ import argparse
 import glob
 import json
 import os
+import re
 import subprocess
 import sys
 import urllib.error
@@ -84,6 +85,19 @@ def clean_error(value):
     if value in (None, "", 0, "0"):
         return None
     return str(value)
+
+
+JOB_MAX = 80                                     # chars of a job name or error kept in a push
+CONTROL = re.compile(r"\x1b\[[0-?]*[ -/]*[@-~]|[\x00-\x1f\x7f-\x9f\u200b-\u200f\u202a-\u202e\u2066-\u2069]")
+
+
+def clean_text(value, limit=JOB_MAX):
+    """Job names and errors come from the printer (anyone who can send it a file names the job): no
+    control characters or escape sequences, whitespace collapsed, length capped. None stays None."""
+    if value is None:
+        return None
+    text = " ".join(CONTROL.sub(" ", str(value)).split())
+    return text if len(text) <= limit else text[:limit - 3] + "..."
 
 
 def http_get_json(url, api_key=None, timeout=10):
@@ -214,14 +228,17 @@ def read_bambu(config_dir, printer_id, bambu_script, wait_seconds=12):
 def read_http_backend(backend, config_dir, timeout=10):
     config = load_json(os.path.join(config_dir, "printer.json"), {})
     host, api_key = config.get("host"), config.get("api_key") or None
+    scheme = config.get("scheme", "http")   # "https" when the printer sits behind TLS; plain http only on a trusted LAN
     if not host:
         return None, f"no host in {os.path.join(config_dir, 'printer.json')}"
+    if scheme not in ("http", "https"):
+        return None, f"scheme must be http or https, not {scheme!r}"
     try:
         if backend == "moonraker":
-            url = f"http://{host}:{config.get('port', 7125)}/printer/objects/query?print_stats&virtual_sdcard"
+            url = f"{scheme}://{host}:{config.get('port', 7125)}/printer/objects/query?print_stats&virtual_sdcard"
             reading = normalize_moonraker(http_get_json(url, api_key, timeout))
         else:
-            url = f"http://{host}:{config.get('port', 80)}/api/job"
+            url = f"{scheme}://{host}:{config.get('port', 443 if scheme == 'https' else 80)}/api/job"
             reading = normalize_octoprint(http_get_json(url, api_key, timeout))
     except (urllib.error.URLError, OSError, ValueError) as exc:
         return None, type(exc).__name__
@@ -237,12 +254,12 @@ def choose_backend(explicit, config_dir):
 # --------------------------------------------------------------------------- decisions (pure)
 def build_message(reading):
     """(title, text, priority) for a state worth announcing, else None."""
-    name = str(reading.get("job") or "print").replace("_", " ")
+    name = clean_text(str(reading.get("job") or "print").replace("_", " ")) or "print"
     percent = reading.get("percent")
     where = ""
     if reading.get("layer") is not None and reading.get("total_layers"):
         where = f" (layer {reading['layer']} of {reading['total_layers']})"
-    error = f" Error: {reading['error']}." if reading.get("error") else ""
+    error = f" Error: {clean_text(reading['error'])}." if reading.get("error") else ""
     state = reading.get("state")
     if state == "FINISH":
         return "Print finished", f"{name} is done. Ready to remove from the plate.", "default"
@@ -288,8 +305,10 @@ def send_ntfy(path, title, text, priority):
         return False
     body = json.dumps({"topic": config["topic"], "title": title, "message": text,
                        "priority": {"low": 2, "default": 3, "high": 4}[priority]}).encode()
-    request = urllib.request.Request(config.get("server", "https://ntfy.sh"), data=body,
-                                     headers={"Content-Type": "application/json"})
+    headers = {"Content-Type": "application/json"}
+    if config.get("token"):                       # ntfy access token (tk_...), for a protected topic or server
+        headers["Authorization"] = f"Bearer {config['token']}"
+    request = urllib.request.Request(config.get("server", "https://ntfy.sh"), data=body, headers=headers)
     urllib.request.urlopen(request, timeout=15).read()
     return True
 
@@ -325,7 +344,7 @@ def main(argv=None):
     if reading is None:
         print(f"no reading ({error})")
     else:
-        print(f"[{backend}] state: {reading['state']} | {reading['job']} | {reading['percent']}%")
+        print(f"[{backend}] state: {clean_text(reading['state'])} | {clean_text(reading['job'])} | {reading['percent']}%")
 
     messages, new_state = decide(previous, reading, args.offline_after)
     for title, text, priority in messages:

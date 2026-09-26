@@ -58,6 +58,24 @@ class PackageError(RuntimeError):
     pass
 
 
+# Zip-bomb guard: a .3mf is a zip, and a downloaded one is untrusted. The central directory's declared
+# sizes are checked before anything is inflated (zipfile never inflates past the declared size).
+ZIP_MAX_ENTRY = 200 * 1024 * 1024   # bytes, one entry uncompressed
+ZIP_MAX_TOTAL = 500 * 1024 * 1024   # bytes, all entries together
+ZIP_MAX_RATIO = 100                 # uncompressed:compressed, checked on entries over 1 MB
+
+
+def check_zip(archive):
+    """Raise ValueError when the archive would inflate to something absurd."""
+    total = 0
+    for info in archive.infolist():
+        total += info.file_size
+        if info.file_size > ZIP_MAX_ENTRY or total > ZIP_MAX_TOTAL:
+            raise ValueError(f"{info.filename}: archive too large once uncompressed, refused")
+        if info.file_size > 1024 * 1024 and info.file_size > ZIP_MAX_RATIO * max(info.compress_size, 1):
+            raise ValueError(f"{info.filename}: compression ratio over {ZIP_MAX_RATIO}:1, refused as a possible zip bomb")
+
+
 def find_plate_paths(template: Path, plate: int | None = None) -> tuple[str, str]:
     """(plate_gcode_path, plate_md5_path) inside the template archive.
 
@@ -66,6 +84,10 @@ def find_plate_paths(template: Path, plate: int | None = None) -> tuple[str, str
     "Export sliced file" one, and cannot be used as a template (see the note in the module docstring).
     """
     with zipfile.ZipFile(template) as archive:
+        try:
+            check_zip(archive)  # runs before package() opens `out`, so a refused template leaves no file behind
+        except ValueError as error:
+            raise PackageError(f"Template refused: {error}") from None
         names = set(archive.namelist())
     plates = sorted(int(m.group(1)) for name in names if (m := PLATE_RE.match(name)))
     if not plates:
