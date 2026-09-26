@@ -204,6 +204,30 @@ but only down to the *minimum print speed*, and the tip is already there.
 In step 2, when the model or the analyzer shows a narrow tip near the top, ask: "will there be another part on the plate? if not, a sacrificial tower?".
 **State: not yet tested in this workflow.**
 
+## Lesser-known OrcaSlicer settings worth knowing
+
+From The Next Layer's "Orca Slicer just added a ton of useful features" (YouTube `-EwyMzNSIOE`, Sep 2025). The creator had not tested
+several of them, and none is print-proven in this workflow yet, so the analyzer never applies them; the assistant may suggest one
+when the case shows up. Find each with the slicer's search box rather than by tab.
+
+| Case | Setting | What it does |
+|---|---|---|
+| Automatic supports keep supporting bridges | don't support bridges | keeps auto supports, skips bridges, no painting or blockers |
+| Downward-facing counterbored hole | bridge counterbore holes (sacrificial layer or partial bridge) | the Voron trick, applied to any downloaded model |
+| A hole that must be exact | polyholes | prints the circle as a polygon of straight segments |
+| A height that must land exactly (e.g. 20.05 mm) | precise Z height | makes the last layer thinner instead of rounding down |
+| Tiny gaps in sharp corners of top and bottom layers | small area flow compensation | raises flow where the line is too thick to fill |
+| Stringing from the prime tower, or warping | per-object skirt and draft shield | the shield catches strings and backs up a detached prime tower |
+| A bridge the slicer will not do, or a set angle | bridge infill direction | fixes the bridge angle |
+| Scarring where supports touched | ironing support interfaces | smoother support contact surface |
+| Magnet holes in a part you will glue instead | close holes | ignores holes in X and Y |
+| A stronger open mesh (grille, sieve) | infill multi-line | thicker infill lines without changing the openings |
+| Two materials that do not bond | beam interlocking | stitches the materials together in X, Y and Z |
+
+Quality of life: the plate lock icon keeps auto-arrange off a plate; preferences can skip the STEP resolution dialog, set how a 3MF
+opens ("ask when relevant" only asks when the file holds more than geometry; "geometry only" drops its print settings) and skip the
+home tab.
+
 ## What this does not do
 
 - It does not slice, and it does not know time or grams.

@@ -66,6 +66,18 @@ Last reviewed: 2026-09-26. Sources: The Next Layer, "new 3D printing tools" (You
 |---|---|---|
 | Watchtower (YGK3D) | Local, cloud-free dashboard for Bambu, Klipper, PrusaLink and OctoPrint. A "virtual printer" queue: the slicer sends a job and it picks a printer of that type with the right filament loaded. Filament inventory, failure detection, smart plugs, phone notifications. Runs on a Mac or a Raspberry Pi. Lifetime license from US$ 59, farm US$ 719; Kickstarter not yet open (Sep 2026) | radar. Pays off with several printers; with one, [the monitor](07-monitor-and-alerts.md) already sends alerts |
 
+## Accessories for a Bambu P2-series printer (hardware)
+
+From The Next Layer's product round-ups (`rIVenFlVESk`, Oct 2025; `LwP_1jZ9xu0`, Feb 2026). Nothing bought. P2-series compatibility is
+listed only where the video states it.
+
+| Item | What it is | Status |
+|---|---|---|
+| Fetus build plate for the P2S | No-heat adhesion plate named for the P2S; US$ 18.90 pre-order (Feb 2026) | radar |
+| E3D Obsidian and Diamondback | Hardened nozzle (Obsidian, for H2, X1, P1) and a Diamondback hotend announced for the H2 and **P2** series, about £ 100 | radar; matters only for abrasive (carbon or glass fiber) filaments |
+| BTT Panda Station | Rolling cabinet for Bambu printers with a waste drawer (Panda Den); US$ 299 plus US$ 159 | radar; P2S fit not confirmed |
+| Dryers: Sunlu S4 Pro, Sovol SH03 (US$ 119) | Filament dryers up to 85 °C | radar; plain PLA rarely needs drying |
+
 ## Gridfinity and drawer organization
 
 | Tool | What it does | Status |
