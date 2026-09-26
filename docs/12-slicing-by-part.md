@@ -222,7 +222,18 @@ when the case shows up. Find each with the slicer's search box rather than by ta
 | Scarring where supports touched | ironing support interfaces | smoother support contact surface |
 | Magnet holes in a part you will glue instead | close holes | ignores holes in X and Y |
 | A stronger open mesh (grille, sieve) | infill multi-line | thicker infill lines without changing the openings |
-| Two materials that do not bond | beam interlocking | stitches the materials together in X, Y and Z |
+| Two materials that do not bond | beam interlocking | stitches the materials together in X, Y and Z; Teaching Tech's test (`-2K67P5L8A4`) separated far less with it |
+| Reinforce one band of height (a neck, a hook base) without raising all infill | insert solid layers (2.3.1) | `5#1` = one solid layer every 5; `77#52` = 52 solid layers from layer 77. Can band at the solid-to-sparse change |
+| Tune flow for one structure only | set other flow ratios (2.3.2) | separate flow for first layer, outer wall, inner wall, top |
+| Bridges | bridge line width and bridge density (2.4) | width equal to the nozzle; density above 100% (110% tested) |
+| Tall part that wobbles | infill corner smoothing (2.3.2) | rounds infill corners so the head brakes and shakes less |
+| Tall prime tower that detaches | enable tower interface features (2.3.2) | hotter nozzle on the tower's interface layers |
+| Large part that prints undersized | filament shrinkage X, Y, Z | print a test strip, let it cool, measure. OrcaSlicer takes 100 minus the shrink % (0.42% becomes 99.58%); PrusaSlicer takes 0.42 directly |
+| Support in a material that does not bond to the part | support top and bottom Z distance 0, interface spacing 0 | no air gap needed when the materials do not stick |
+
+Sources for the second half of the table: Minimal 3DP (`V5rhSVGcOzU`, `JYgZm96gIHg`, `SBB21vMz26o`, `4Pr5vlJvTvk`) and Teaching Tech
+(`HwBweQiFL9g`, `-2K67P5L8A4`), all tested on printers other than a Bambu. The G-code preview modes "Actual flow" and "Actual speed"
+(2.3.2) show flow and speed problems before printing.
 
 Quality of life: the plate lock icon keeps auto-arrange off a plate; preferences can skip the STEP resolution dialog, set how a 3MF
 opens ("ask when relevant" only asks when the file holds more than geometry; "geometry only" drops its print settings) and skip the

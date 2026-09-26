@@ -78,6 +78,23 @@ listed only where the video states it.
 | BTT Panda Station | Rolling cabinet for Bambu printers with a waste drawer (Panda Den); US$ 299 plus US$ 159 | radar; P2S fit not confirmed |
 | Dryers: Sunlu S4 Pro, Sovol SH03 (US$ 119) | Filament dryers up to 85 °C | radar; plain PLA rarely needs drying |
 
+## Minimal 3DP tools (`minimal3dp.com/tools`)
+
+Free, in the browser, no account. The data comes from manufacturer datasheets and papers, extracted with AI, and is not calibrated to
+any specific printer or spool. Contains affiliate links.
+
+| Tool | What it does | Status |
+|---|---|---|
+| FDM Cost Calculator | True part cost: machine depreciation per hour, power, nozzle and plate wear, material (support material too), labor, failure rate and margin; exports a PDF quote. Settings stay in the browser, per the author | on demand, when pricing a part for sale |
+| Filament Finder | Compares 40+ materials by strength, UV, printability and cost | on demand, when moving beyond PLA |
+| OrcaSlicer Expert Assistant | Suggests layer height, walls, speed and infill from filament and priority | radar; generic, `analyze_part.py` covers this per part |
+
+## Strength
+
+| Tool | What it does | Status |
+|---|---|---|
+| BrickLayers | Offsets wall layers by half a layer, like bricks, for stronger layer bonding. Not in mainline OrcaSlicer: a Python post-processing script, or a web version by Minimal 3DP that processes the G-code | radar. It edits G-code after slicing, which does not fit sending the `.3mf` project to an AMS printer |
+
 ## Gridfinity and drawer organization
 
 | Tool | What it does | Status |
@@ -97,8 +114,8 @@ often come with thin walls, holes or an uneven base.
 
 | Tool | What it does | Status |
 |---|---|---|
-| Meshy (`meshy.ai`) | Text or image to 3D, textures, topology control | radar |
-| Tripo (`tripo3d.ai`) | Text, one or several images to 3D; also rigging and animation | radar |
+| Meshy (`meshy.ai`) | Text or image to 3D, textures, topology control | radar. Minimal 3DP's Meshy 6 test (`lFKBblOKKfg`, Jun 2026, sponsored by Meshy): text only, high detail, relief printed well, no holes or thin walls |
+| Tripo (`tripo3d.ai`) | Text, one or several images to 3D; also rigging and animation | radar. Minimal 3DP's Tripo 3.0 test (`2XbUvOvsWHw`, Dec 2025, sponsored): good for organic shapes. **Export 3MF**: the STL came out at the wrong scale and OBJ gave trouble |
 | Hyper3D Rodin (`hyper3d.ai`) | 3D generation with clean topology; Blender integration, limited free trial key | radar |
 | Schematik (`schematik.io`) | **Not 3D:** describe an electronics project in plain language, get code, wiring, parts and assembly steps for Arduino, ESP32 or Pico | radar; useful when a project pairs electronics with a printed enclosure |
 

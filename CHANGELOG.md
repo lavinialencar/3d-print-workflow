@@ -16,6 +16,8 @@ All notable changes are recorded here. Format based on [Keep a Changelog](https:
 - `docs/13-tool-radar.md`: one page for the tools around the main cycle (Gridfinity from a photo, AI 3D generators, textures, multicolor splitting, OrcaSlicer forks, filament sites), each with a status: in the flow, on demand, radar or dropped. Nothing installed; the conductor reads it when asked "is there a tool for X?".
 - The filament database 3D Filament Profiles enters the flow, read-only: hex colors, brand settings and empty spool weight.
 
+- docs/12: OrcaSlicer 2.3.1 to 2.4 features from Minimal 3DP and Teaching Tech (insert solid layers, per-structure flow ratios, bridge width and density, infill corner smoothing, tower interface, filament shrinkage, zero-gap support between non-bonding materials).
+- docs/13: Minimal 3DP's free tools (cost calculator, filament finder, expert assistant), BrickLayers, and test verdicts for Meshy 6 and Tripo 3.0.
 - docs/12: a table of lesser-known OrcaSlicer settings (don't support bridges, bridge counterbore holes, polyholes, precise Z height, small area flow compensation, per-object draft shield, close holes, infill multi-line, beam interlocking and more), suggested by the assistant, never applied by the analyzer.
 - docs/13: accessories for a Bambu P2-series printer (a P2S build plate, hardened hotend, cabinet, dryers), all radar.
 - docs/13, second batch from The Next Layer's "12 new 3D printing apps": new sections for calibration (CN3D Docs), previewing files on a Mac (threemf in the flow; ThumbHost3mf dropped after a side-by-side test), remixing a downloaded model (Mesh to STEP, with an upload warning) and managing several printers (Watchtower); plus Spoolio, PaintPort, OrcaSlicer Image Map and PrusaSlicer 3.0.
