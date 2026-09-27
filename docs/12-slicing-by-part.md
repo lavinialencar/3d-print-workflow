@@ -204,6 +204,28 @@ but only down to the *minimum print speed*, and the tip is already there.
 In step 2, when the model or the analyzer shows a narrow tip near the top, ask: "will there be another part on the plate? if not, a sacrificial tower?".
 **State: not yet tested in this workflow.**
 
+### A bigger nozzle to save time
+
+Swapping a 0.4 mm nozzle for a 0.6 or 0.8 mm one barely changes print time on its own (9 minutes out of 3 h 30 on a test cube). The time
+comes from adjusting the walls with it: one 0.8 mm wall carries as much material as two 0.4 mm walls, so halve the wall count and drop one
+top and one bottom layer. On the same cube that saved about 40 minutes with the same strength, which matches the rule in the thick-part row
+above: strength follows the amount of material, not the nozzle. Source: "7 trucos para imprimir más rápido" (YouTube `ayjZkwOPz9c`, Spanish).
+**State: video only, not tested in this workflow.**
+
+### Hiding layer lines
+
+A test of ten methods on the same Gridfinity box (YouTube `WxpkxQZmCZ8`), from most to least worth it:
+
+1. **Sand, prime and paint**, repeating sanding and primer until the surface closes. The only perfect, consistent finish. Slow, and needs a mask for the dust and spray.
+2. **A filament that hides lines on its own.** Filled filaments break up the surface with no post-processing (PETG-CF did best; marble PLA also works). The most practical option. Silk and wood did not make the top.
+3. **Acetone vapour.** Removes the lines but leaves the part glossy. Acetone only smooths ABS and ASA, not PLA; ventilate.
+4. **Orientation and plate.** The face against the plate copies the plate's texture, so choose the orientation by which face will be seen.
+5. **Texture in the model.** A fine pattern with no large gaps (small geometric cubes) distracts the eye; horizontal stripes make lines **more** visible; crosses and hexagons brought VFA. Fuzzy skin hides lines but only looks good at reduced thickness, better for grip than for a display part.
+
+Not worth it: **printing slower** (no change in PLA); **a smaller nozzle** (0.2 mm hides the lines but costs a lot of time, and the part warped);
+**polishing PLA** from 120 to 5000 grit over three days (it ends up looking like old, scratched injection-moulded plastic); a laser (only if you
+already have one, and engraving a design works better than polishing). **State: video only, not tested in this workflow.**
+
 ## Lesser-known OrcaSlicer settings worth knowing
 
 From The Next Layer's "Orca Slicer just added a ton of useful features" (YouTube `-EwyMzNSIOE`, Sep 2025). The creator had not tested
