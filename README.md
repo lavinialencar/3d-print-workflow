@@ -14,6 +14,8 @@ Model, check, slice, send, monitor and log, with phone alerts. A safe, documente
 
 <img src="assets/workflow.svg" alt="The workflow: model, check, recommend, slice, send, monitor, log" width="860">
 
+**[See the live demo page →](https://lavinialencar.com.br/lab/3d-print/)**
+
 </div>
 
 > **Unofficial.** This project is not affiliated with, endorsed by or supported by Bambu Lab, Autodesk, Anthropic, Prusa, the Klipper, Moonraker or OctoPrint
