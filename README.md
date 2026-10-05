@@ -220,3 +220,5 @@ python3 tools/check_links.py                 # every doc link resolves
 
 "Bambu Lab", "P2S", "AMS", "Bambu Studio", "Klipper", "OctoPrint" and other names are trademarks of their owners. They are used here only to describe compatibility.
 teste de PR
+
+<!-- updated 2026-10-05 -->
