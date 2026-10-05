@@ -197,16 +197,6 @@ here would be very welcome.
 **Why not just use the manufacturer's app?** Apps cover the happy path. This project is for people who want their own tools in the loop, or who chose a mode (such as
 Bambu's LAN Only) that switches the app's features off.
 
-## Roadmap
-
-- [ ] Observe a real **print finished** alert and mark it verified
-- [ ] Run the Moonraker and OctoPrint adapters on real printers and promote them out of experimental
-- [ ] Ship a tested `mesh_check` and `conference_board` script (today they are described in [docs/08](docs/08-modeling-and-delivery.md))
-- [ ] A tested container recipe for running the monitor on a NAS or Raspberry Pi
-- [ ] A cron and systemd option for Linux
-- [ ] More adapters: Prusa Link, Creality, others
-- [ ] Per-part slicing overrides through a generated slicer profile
-- [ ] A compatibility table filled by users
 
 ## Contributing
 
