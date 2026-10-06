@@ -222,3 +222,4 @@ python3 tools/check_links.py                 # every doc link resolves
 teste de PR
 
 <!-- updated 2026-10-05 -->
+<!-- pair extraordinaire test -->
